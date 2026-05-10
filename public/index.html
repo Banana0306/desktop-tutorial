@@ -3,24 +3,901 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auth Tutorial</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta name="description" content="Since 1981, a trusted wholesale distributor of premium motorcycle tires and braking systems — Bridgestone, Dunlop, Pirelli, Michelin, Maxxis, IRC, and Brembo." />
+  <title>TW Moto Parts — Premium Tire & Braking System Distributor Since 1981</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0d1b2a;
+      --blue:   #1b4f8a;
+      --sky:    #2d7dd2;
+      --gold:   #c9a227;
+      --light:  #f4f6f9;
+      --white:  #ffffff;
+      --gray:   #6b7280;
+      --border: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.10);
+      --transition: 0.25s ease;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--navy);
+      background: var(--white);
+      line-height: 1.65;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 68px;
+      background: rgba(13,27,42,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+      color: var(--white);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .nav-brand span { color: var(--gold); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.80);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: var(--gold);
+      color: var(--navy) !important;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-weight: 700 !important;
+      transition: background var(--transition) !important;
+    }
+    .nav-cta:hover { background: #e6b82a !important; color: var(--navy) !important; }
+
+    /* hamburger */
+    .menu-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .menu-toggle span { display: block; width: 24px; height: 2px; background: var(--white); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--navy) 0%, #112240 55%, #1b3a6b 100%);
+      display: flex; align-items: center;
+      padding: 120px 5% 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; max-width: 680px; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(201,162,39,0.15);
+      border: 1px solid rgba(201,162,39,0.4);
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+    #hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    #hero h1 span { color: var(--gold); }
+    #hero p {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.72);
+      max-width: 520px;
+      margin-bottom: 40px;
+    }
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      padding: 14px 32px;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .btn-primary:hover { background: #e6b82a; transform: translateY(-1px); }
+    .btn-outline {
+      border: 2px solid rgba(255,255,255,0.35);
+      color: var(--white);
+      padding: 14px 32px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .btn-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.07); }
+
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 60px;
+      flex-wrap: wrap;
+    }
+    .stat-item { color: var(--white); }
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── SECTION BASICS ── */
+    section { padding: 90px 5%; }
+    .section-tag {
+      display: inline-block;
+      color: var(--sky);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .section-lead {
+      font-size: 1.05rem;
+      color: var(--gray);
+      max-width: 600px;
+      margin-bottom: 56px;
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--light); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .about-visual {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+      border-radius: 16px;
+      padding: 48px 40px;
+      color: var(--white);
+    }
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 18px; top: 38px; bottom: 0;
+      width: 2px;
+      background: rgba(201,162,39,0.3);
+    }
+    .tl-dot {
+      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(201,162,39,0.15);
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tl-dot svg { width: 16px; height: 16px; fill: var(--gold); }
+    .tl-year {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .tl-text {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.80);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+    .about-content h2 { margin-bottom: 20px; }
+    .about-content p { color: var(--gray); margin-bottom: 18px; }
+    .value-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+    .value-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.95rem; color: var(--navy);
+    }
+    .check {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      background: var(--sky);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 2px;
+    }
+    .check::after {
+      content: '';
+      width: 6px; height: 10px;
+      border-right: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(45deg) translate(-1px,-1px);
+    }
+
+    /* ── BRANDS ── */
+    #brands { background: var(--white); }
+    .brands-intro { max-width: 680px; }
+    .category-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin: 48px 0 20px;
+    }
+    .category-label:first-of-type { margin-top: 0; }
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .brand-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 16px;
+      text-align: center;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+      cursor: default;
+    }
+    .brand-card:hover {
+      border-color: var(--sky);
+      box-shadow: var(--shadow);
+      transform: translateY(-3px);
+    }
+    .brand-icon {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .brand-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .brand-tag {
+      font-size: 0.73rem;
+      color: var(--gray);
+    }
+    /* Brembo card highlight */
+    .brand-card.premium {
+      background: linear-gradient(135deg, #0d1b2a, #1b2f4e);
+      border-color: var(--gold);
+    }
+    .brand-card.premium .brand-name { color: var(--white); }
+    .brand-card.premium .brand-tag { color: var(--gold); }
+
+    /* ── PRODUCTS ── */
+    #products { background: var(--light); }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .product-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+    }
+    .product-img {
+      height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem;
+    }
+    .product-body { padding: 24px; }
+    .product-body h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .product-body p { font-size: 0.88rem; color: var(--gray); line-height: 1.6; }
+
+    /* ── WHY ── */
+    #why { background: var(--navy); }
+    #why h2, #why .section-tag { color: var(--white); }
+    #why .section-tag { color: var(--gold); }
+    #why .section-lead { color: rgba(255,255,255,0.6); }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 28px;
+    }
+    .why-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 28px 24px;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .why-card:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(201,162,39,0.4);
+    }
+    .why-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    .why-card h3 { color: var(--white); font-size: 1rem; margin-bottom: 8px; }
+    .why-card p { color: rgba(255,255,255,0.55); font-size: 0.88rem; line-height: 1.6; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--light); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .contact-info h3 { font-size: 1.1rem; margin-bottom: 24px; }
+    .contact-details { display: flex; flex-direction: column; gap: 20px; }
+    .contact-item {
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .contact-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      background: var(--blue);
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .contact-item h4 { font-size: 0.8rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em; }
+    .contact-item p { font-size: 0.95rem; color: var(--navy); margin-top: 2px; }
+    .contact-item a { color: var(--sky); text-decoration: none; }
+    .contact-item a:hover { text-decoration: underline; }
+
+    .contact-form-wrap {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+    }
+    .contact-form-wrap h3 { font-size: 1.2rem; margin-bottom: 28px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--navy); letter-spacing: 0.04em; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--navy);
+      background: var(--white);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(45,125,210,0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 110px; }
+    .form-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--blue);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--transition);
+      margin-top: 4px;
+    }
+    .form-submit:hover { background: var(--sky); }
+    .form-note { font-size: 0.8rem; color: var(--gray); margin-top: 12px; text-align: center; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.5);
+      padding: 48px 5% 32px;
+    }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 24px;
+    }
+    .footer-brand { font-size: 1.1rem; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+    .footer-brand span { color: var(--gold); }
+    .footer-desc { font-size: 0.85rem; line-height: 1.7; }
+    .footer-col h4 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul li a {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    .footer-col ul li a:hover { color: var(--gold); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem;
+      flex-wrap: wrap; gap: 8px;
+    }
+
+    /* ── SUCCESS TOAST ── */
+    .toast {
+      display: none;
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: #22c55e;
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .toast.show { display: block; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .about-grid, .contact-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 680px) {
+      nav { padding: 0 4%; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 68px; left: 0; right: 0;
+        background: var(--navy);
+        padding: 20px 5%;
+        gap: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      .menu-toggle { display: flex; }
+      section { padding: 60px 4%; }
+      .form-row { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .hero-stats { gap: 24px; }
+      .contact-form-wrap { padding: 24px; }
+    }
+  </style>
 </head>
 <body>
-  <nav>
-    <span class="brand">Auth Tutorial</span>
-    <a href="/login.html">Login</a>
-    <a href="/register.html">Register</a>
-  </nav>
-  <main>
-    <div class="card hero">
-      <h1>User Authentication Tutorial</h1>
-      <p>Learn how to implement secure user authentication using<br>Node.js, Express, bcryptjs, and JWT.</p>
-      <div class="btn-row">
-        <a href="/register.html" class="btn btn-primary">Get Started</a>
-        <a href="/login.html" class="btn btn-secondary">Log In</a>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-brand" href="#hero">TW<span>Moto</span>Parts</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#brands">Brands</a></li>
+    <li><a href="#products">Products</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#contact" class="nav-cta">Contact Us</a></li>
+  </ul>
+  <div class="menu-toggle" id="menu-toggle" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Established 1981 · Taiwan</div>
+    <h1>Your Trusted Partner in<br><span>Premium Motorcycle</span><br>Tires &amp; Braking Systems</h1>
+    <p>For over 45 years, we have connected international manufacturers with quality-conscious customers across Asia — wholesale distribution of the world's leading tire and brake brands.</p>
+    <div class="hero-btns">
+      <a href="#brands" class="btn-primary">Explore Our Brands</a>
+      <a href="#contact" class="btn-outline">Get a Quote</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">45+</div>
+        <div class="stat-label">Years in Business</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Global Tire Brands</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1981</div>
+        <div class="stat-label">Founded</div>
       </div>
     </div>
-  </main>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+
+    <div class="about-visual">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-dot">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 14.93V18h-2v-1.07A8.001 8.001 0 0 1 4 9h2a6 6 0 0 0 12 0h2a8.001 8.001 0 0 1-7 7.93z"/></svg>
+          </div>
+          <div>
+            <div class="tl-year">1981 — Foundation</div>
+            <div class="tl-text">Established as an authorized distributor of BS (Bridgestone) motorcycle components in partnership with Suzuki, serving the growing Taiwan market.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+          </div>
+          <div>
+            <div class="tl-year">1990s — Manufacturing Partnerships</div>
+            <div class="tl-text">Began OEM collaboration with local Taiwanese factories to produce motorcycle tires, and developed proprietary brake pad and braking system product lines.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          </div>
+          <div>
+            <div class="tl-year">2000s–Present — Wholesale Expansion</div>
+            <div class="tl-text">Expanded into full wholesale distribution of global premium brands — Bridgestone, Dunlop, Pirelli, Michelin, Maxxis, IRC — and exclusive import of Brembo braking systems.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-content">
+      <span class="section-tag">About Us</span>
+      <h2>45 Years of Trust in the Motorcycle Industry</h2>
+      <p>We began in 1981 as a Bridgestone motorcycle parts distributor and have grown into one of Taiwan's most trusted wholesale distributors of premium tire and braking system brands for international markets.</p>
+      <p>Our deep relationships with global manufacturers — built over decades — allow us to offer competitive pricing, reliable logistics, and expert product knowledge that our partners rely on.</p>
+      <ul class="value-list">
+        <li><span class="check"></span>Authorized wholesale distributor for 6+ internationally recognized tire brands</li>
+        <li><span class="check"></span>Importer of Brembo precision braking systems</li>
+        <li><span class="check"></span>OEM tire manufacturing experience with Taiwanese factories</li>
+        <li><span class="check"></span>45+ years of industry relationships and technical expertise</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- BRANDS -->
+<section id="brands">
+  <div class="brands-intro">
+    <span class="section-tag">Our Portfolio</span>
+    <h2>World-Class Brands, One Trusted Partner</h2>
+    <p class="section-lead">We carry the most respected names in motorcycle tires and braking systems — sourced directly and distributed with full after-sales support.</p>
+  </div>
+
+  <p class="category-label">Motorcycle Tires</p>
+  <div class="brand-grid">
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#fff3cd">🟡</div>
+      <div class="brand-name">Bridgestone</div>
+      <div class="brand-tag">Japan · Premium OEM</div>
+    </div>
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#fff3cd">🟠</div>
+      <div class="brand-name">Dunlop</div>
+      <div class="brand-tag">UK/Japan · Racing Heritage</div>
+    </div>
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#ffe4e4">🔴</div>
+      <div class="brand-name">Pirelli</div>
+      <div class="brand-tag">Italy · High Performance</div>
+    </div>
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#e8f5e9">🟢</div>
+      <div class="brand-name">Michelin</div>
+      <div class="brand-tag">France · Global Leader</div>
+    </div>
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#e3f2fd">🐘</div>
+      <div class="brand-name">Maxxis</div>
+      <div class="brand-tag">Taiwan · Value Premium</div>
+    </div>
+    <div class="brand-card">
+      <div class="brand-icon" style="background:#f3e5f5">🔵</div>
+      <div class="brand-name">IRC</div>
+      <div class="brand-tag">Japan · Endurance Series</div>
+    </div>
+  </div>
+
+  <p class="category-label" style="margin-top:48px">Premium Braking Systems</p>
+  <div class="brand-grid" style="max-width:200px">
+    <div class="brand-card premium">
+      <div class="brand-icon" style="background:rgba(201,162,39,0.15)">🏁</div>
+      <div class="brand-name">Brembo</div>
+      <div class="brand-tag">Italy · Precision Braking</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <span class="section-tag">What We Offer</span>
+  <h2>Product Categories</h2>
+  <p class="section-lead">From sport to touring, scooter to off-road — we stock a comprehensive range for every application.</p>
+
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#1b4f8a,#0d1b2a)">🏍️</div>
+      <div class="product-body">
+        <h3>Sport &amp; Street Tires</h3>
+        <p>High-grip compound tires for sport bikes and naked streetfighters. Bridgestone Battlax, Pirelli Diablo, Michelin Power series and more.</p>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#2d5a27,#1a3a16)">🛵</div>
+      <div class="product-body">
+        <h3>Scooter &amp; Commuter Tires</h3>
+        <p>Durable, fuel-efficient tires for scooters and commuter motorcycles. Maxxis, IRC, and Dunlop economical series.</p>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#5a3e00,#3a2800)">🌲</div>
+      <div class="product-body">
+        <h3>Touring &amp; Adventure Tires</h3>
+        <p>Long-mileage all-weather tires for touring and adventure motorcycles. Michelin Pilot Road, Bridgestone Battlax Adventure series.</p>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#6b0000,#3a0000)">🏁</div>
+      <div class="product-body">
+        <h3>Brembo Braking Systems</h3>
+        <p>Imported Brembo calipers, master cylinders, brake lines, and complete brake kits. Precision Italian engineering for maximum stopping performance.</p>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#1a4a6b,#0d2a3d)">🔧</div>
+      <div class="product-body">
+        <h3>Brake Pads &amp; Discs</h3>
+        <p>Motorcycle brake pads developed through our own R&amp;D, available in street and performance compounds. Compatible with major motorcycle brands.</p>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#3a1a6b,#1a0d3a)">📦</div>
+      <div class="product-body">
+        <h3>OEM &amp; Wholesale Supply</h3>
+        <p>Bulk wholesale pricing available for distributors and retailers. OEM partnership opportunities for tire manufacturing with Taiwanese factories.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <span class="section-tag">Why Choose Us</span>
+  <h2 style="color:var(--white)">Built on Decades of Industry Trust</h2>
+  <p class="section-lead">We are not just a distributor — we are a long-term partner with the expertise to support your business.</p>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">🤝</div>
+      <h3>45+ Years of Relationships</h3>
+      <p>Direct manufacturer relationships built since 1981, ensuring reliable supply and competitive pricing unavailable through general channels.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">✅</div>
+      <h3>Authorized Distributor</h3>
+      <p>All products are sourced through official channels. We carry full documentation, warranties, and brand authorization certificates.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🚀</div>
+      <h3>Fast, Reliable Logistics</h3>
+      <p>Extensive Taiwan-based inventory with streamlined export procedures for smooth delivery to customers across Asia and beyond.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🔬</div>
+      <h3>Technical Expertise</h3>
+      <p>Our team has hands-on experience in tire manufacturing and brake system development — we provide technical consultation, not just products.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🌏</div>
+      <h3>Export-Ready Operations</h3>
+      <p>Experienced in international trade documentation, customs compliance, and managing shipments to diverse markets worldwide.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">💼</div>
+      <h3>Flexible Order Sizes</h3>
+      <p>From sample orders to full container loads, we accommodate distributors, retailers, and fleet operators of all sizes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="contact-info">
+      <span class="section-tag">Get in Touch</span>
+      <h2>Ready to Start a Partnership?</h2>
+      <p style="color:var(--gray);margin-bottom:32px">Whether you are a retailer, fleet operator, or overseas distributor, we welcome your inquiry. Our team typically responds within one business day.</p>
+      <div class="contact-details">
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <h4>Address</h4>
+            <p>Taiwan (Please contact us for full address)</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <h4>Phone / WhatsApp</h4>
+            <p><a href="tel:+886-XXXXXXXX">+886-X-XXXX-XXXX</a></p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <h4>Email</h4>
+            <p><a href="mailto:info@company.com">info@yourcompany.com</a></p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <h4>Business Hours</h4>
+            <p>Mon – Fri, 09:00 – 18:00 (GMT+8)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form-wrap">
+      <h3>Send Us an Inquiry</h3>
+      <form id="contact-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-name">Full Name *</label>
+            <input type="text" id="f-name" placeholder="John Smith" required />
+          </div>
+          <div class="form-group">
+            <label for="f-company">Company</label>
+            <input type="text" id="f-company" placeholder="Your Company Ltd." />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-email">Email *</label>
+            <input type="email" id="f-email" placeholder="you@company.com" required />
+          </div>
+          <div class="form-group">
+            <label for="f-country">Country</label>
+            <input type="text" id="f-country" placeholder="e.g. Vietnam" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="f-interest">Area of Interest</label>
+          <select id="f-interest">
+            <option value="">— Select —</option>
+            <option>Motorcycle Tires (Wholesale)</option>
+            <option>Brembo Braking Systems</option>
+            <option>Brake Pads &amp; Discs</option>
+            <option>OEM / Manufacturing Partnership</option>
+            <option>General Inquiry</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-msg">Message *</label>
+          <textarea id="f-msg" placeholder="Tell us about your requirements, quantities, or any questions…" required></textarea>
+        </div>
+        <button type="submit" class="form-submit">Send Inquiry →</button>
+        <p class="form-note">We respect your privacy. Your information will not be shared.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">TW<span>Moto</span>Parts</div>
+      <p class="footer-desc">Authorized wholesale distributor of premium motorcycle tires and braking systems since 1981. Serving customers and partners across Asia and beyond.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Products</h4>
+      <ul>
+        <li><a href="#brands">Motorcycle Tires</a></li>
+        <li><a href="#brands">Brembo Systems</a></li>
+        <li><a href="#products">Brake Pads &amp; Discs</a></li>
+        <li><a href="#products">OEM / Wholesale</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#about">Our History</a></li>
+        <li><a href="#why">Why Choose Us</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 TWMotoParts. All rights reserved.</span>
+    <span>Taiwan · Established 1981</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">✅ Inquiry sent! We'll be in touch soon.</div>
+
+<script>
+  // Mobile nav toggle
+  const toggle = document.getElementById('menu-toggle');
+  const navLinks = document.getElementById('nav-links');
+  toggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+  // Contact form — demo submit
+  document.getElementById('contact-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const msg = document.getElementById('f-msg').value.trim();
+    if (!name || !email || !msg) {
+      alert('Please fill in all required fields (Name, Email, Message).');
+      return;
+    }
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+    this.reset();
+  });
+</script>
 </body>
 </html>
