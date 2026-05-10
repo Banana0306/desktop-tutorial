@@ -4,6 +4,7 @@ const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const protectedRoutes = require('./routes/protected');
+const logisticsRoutes = require('./routes/logistics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
+app.use('/api/logistics', logisticsRoutes);
 
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res) =>

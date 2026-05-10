@@ -8,6 +8,7 @@ import Inventory   from './pages/Inventory.jsx'
 import Customers   from './pages/Customers.jsx'
 import Reports     from './pages/Reports.jsx'
 import ImportTrade from './pages/ImportTrade.jsx'
+import Logistics   from './pages/Logistics.jsx'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="customers"  element={<Customers />} />
         <Route path="reports"    element={<Reports />} />
         <Route path="import"     element={<ImportTrade />} />
+        <Route path="logistics"  element={<Logistics />} />
       </Route>
     </Routes>
   )

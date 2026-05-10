@@ -566,3 +566,121 @@ tr:hover td { background: rgba(255,255,255,0.015); }
 .mb-20 { margin-bottom: 20px; }
 .mb-24 { margin-bottom: 24px; }
 .mt-16 { margin-top: 16px; }
+
+/* ── Logistics Route Timeline ───────────────────────────── */
+.route-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.route-timeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.route-stop {
+  position: relative;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.stop-warehouse {
+  border-color: var(--border);
+  opacity: 0.7;
+}
+.stop-supplier {
+  border-left: 3px solid var(--amber);
+}
+.stop-customer {
+  border-left: 3px solid var(--accent);
+}
+
+.stop-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+.stop-warehouse .stop-header { cursor: default; }
+
+.stop-seq {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.stop-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  flex-shrink: 0;
+}
+
+.stop-name {
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.stop-city {
+  flex-shrink: 0;
+}
+
+.stop-times {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.stop-travel {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.stop-expand {
+  padding: 2px 8px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.stop-detail {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  background: var(--bg);
+}
+
+.stop-addr {
+  margin-bottom: 12px;
+}
+
+.stop-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.detail-row:last-child { border-bottom: none; }

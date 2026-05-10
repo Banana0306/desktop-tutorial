@@ -11,6 +11,7 @@ const titleMap = {
   '/customers': '客戶主檔',
   '/reports':   '報表分析',
   '/import':    '進口貿易',
+  '/logistics': '物流路線規劃',
 }
 
 export default function Layout() {

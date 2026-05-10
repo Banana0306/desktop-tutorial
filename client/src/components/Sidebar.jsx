@@ -9,6 +9,7 @@ const navItems = [
   { to: '/customers',  icon: '◉', label: '客戶主檔' },
   { to: '/reports',    icon: '▦', label: '報表分析' },
   { to: '/import',     icon: '✈', label: '進口貿易' },
+  { to: '/logistics',  icon: '🚛', label: '物流路線' },
 ]
 
 export default function Sidebar({ collapsed, setCollapsed }) {
