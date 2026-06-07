@@ -1,5 +1,10 @@
 node_modules/
-data/users.json
 .env
+*.log
+dist/
+build/
+.DS_Store
+data/users.json
 client/node_modules/
 client/dist/
+backend/node_modules/

@@ -1,0 +1,49 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const { testConnection } = require('./db/index');
+
+const authRouter            = require('./api/auth');
+const purchaseOrdersRouter  = require('./api/purchase-orders');
+const goodsReceiptsRouter   = require('./api/goods-receipts');
+const purchaseReturnsRouter = require('./api/purchase-returns');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(express.json());
+app.use(morgan('dev'));
+
+// Health check
+app.get('/api/health', async (req, res) => {
+  const dbOk = await testConnection();
+  res.json({
+    ok:   true,
+    db:   dbOk ? 'connected' : 'error',
+    time: new Date().toISOString(),
+  });
+});
+
+// Routes
+app.use('/api/auth',             authRouter);
+app.use('/api/purchase-orders',  purchaseOrdersRouter);
+app.use('/api/goods-receipts',   goodsReceiptsRouter);
+app.use('/api/purchase-returns', purchaseReturnsRouter);
+
+// Global error handler
+app.use((err, req, res, _next) => {
+  console.error('未處理的錯誤:', err.stack);
+  res.status(500).json({ error: '伺服器內部錯誤' });
+});
+
+// Start server
+testConnection().then(() => {
+  app.listen(PORT, () => {
+    console.log(`瑞城 ERP 後端伺服器啟動於 http://localhost:${PORT}`);
+  });
+});
+
+module.exports = app;
