@@ -8,6 +8,12 @@ const authRouter            = require('./api/auth');
 const purchaseOrdersRouter  = require('./api/purchase-orders');
 const goodsReceiptsRouter   = require('./api/goods-receipts');
 const purchaseReturnsRouter = require('./api/purchase-returns');
+const salesOrdersRouter     = require('./api/sales-orders');
+const salesDeliveriesRouter = require('./api/sales-deliveries');
+const salesReturnsRouter    = require('./api/sales-returns');
+const inventoryRouter       = require('./api/inventory');
+const inventoryTransfersRouter = require('./api/inventory-transfers');
+const backordersRouter      = require('./api/backorders');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,6 +38,12 @@ app.use('/api/auth',             authRouter);
 app.use('/api/purchase-orders',  purchaseOrdersRouter);
 app.use('/api/goods-receipts',   goodsReceiptsRouter);
 app.use('/api/purchase-returns', purchaseReturnsRouter);
+app.use('/api/sales-orders',    salesOrdersRouter);
+app.use('/api/sales-deliveries', salesDeliveriesRouter);
+app.use('/api/sales-returns',       salesReturnsRouter);
+app.use('/api/inventory',           inventoryRouter);
+app.use('/api/inventory-transfers', inventoryTransfersRouter);
+app.use('/api/backorders',          backordersRouter);
 
 // Global error handler
 app.use((err, req, res, _next) => {
