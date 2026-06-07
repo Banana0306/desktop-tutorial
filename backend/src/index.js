@@ -14,6 +14,12 @@ const salesReturnsRouter    = require('./api/sales-returns');
 const inventoryRouter       = require('./api/inventory');
 const inventoryTransfersRouter = require('./api/inventory-transfers');
 const backordersRouter      = require('./api/backorders');
+const arInvoicesRouter      = require('./api/ar-invoices');
+const arReceiptsRouter      = require('./api/ar-receipts');
+const apBillsRouter         = require('./api/ap-bills');
+const apPaymentsRouter      = require('./api/ap-payments');
+const landedCostsRouter     = require('./api/landed-costs');
+const reportsRouter         = require('./api/reports');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -44,6 +50,12 @@ app.use('/api/sales-returns',       salesReturnsRouter);
 app.use('/api/inventory',           inventoryRouter);
 app.use('/api/inventory-transfers', inventoryTransfersRouter);
 app.use('/api/backorders',          backordersRouter);
+app.use('/api/ar-invoices',         arInvoicesRouter);
+app.use('/api/ar-receipts',         arReceiptsRouter);
+app.use('/api/ap-bills',            apBillsRouter);
+app.use('/api/ap-payments',         apPaymentsRouter);
+app.use('/api',                     landedCostsRouter);
+app.use('/api/reports',             reportsRouter);
 
 // Global error handler
 app.use((err, req, res, _next) => {
