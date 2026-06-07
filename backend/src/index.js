@@ -20,6 +20,7 @@ const apBillsRouter         = require('./api/ap-bills');
 const apPaymentsRouter      = require('./api/ap-payments');
 const landedCostsRouter     = require('./api/landed-costs');
 const reportsRouter         = require('./api/reports');
+const notificationsRouter   = require('./api/notifications');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -54,8 +55,9 @@ app.use('/api/ar-invoices',         arInvoicesRouter);
 app.use('/api/ar-receipts',         arReceiptsRouter);
 app.use('/api/ap-bills',            apBillsRouter);
 app.use('/api/ap-payments',         apPaymentsRouter);
-app.use('/api',                     landedCostsRouter);
 app.use('/api/reports',             reportsRouter);
+app.use('/api/notifications',       notificationsRouter);
+app.use('/api',                     landedCostsRouter);
 
 // Global error handler
 app.use((err, req, res, _next) => {
