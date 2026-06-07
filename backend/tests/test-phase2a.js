@@ -64,22 +64,47 @@ before(async () => {
 });
 
 after(async () => {
-  await query(`DELETE FROM purchase_return_items WHERE return_id IN (
+  const c = (fn) => fn.catch(() => {});  // ignore FK errors for optional tables
+
+  // Step 1: purchase return items (references purchase_returns AND goods_receipt_items)
+  await c(query(`DELETE FROM purchase_return_items WHERE return_id IN (
     SELECT id FROM purchase_returns WHERE po_id IN (
-      SELECT id FROM purchase_orders WHERE warehouse_id = $1
-    ))`, [warehouseId]);
-  await query(`DELETE FROM purchase_returns WHERE po_id IN (
-    SELECT id FROM purchase_orders WHERE warehouse_id = $1)`, [warehouseId]);
+      SELECT id FROM purchase_orders WHERE warehouse_id = $1))`, [warehouseId]));
+  await c(query(`DELETE FROM purchase_returns WHERE po_id IN (
+    SELECT id FROM purchase_orders WHERE warehouse_id = $1)`, [warehouseId]));
+
+  // Step 2: bypass append-only trigger via SECURITY DEFINER function
+  await query('SELECT test_cleanup_by_warehouse($1)', [warehouseId]);
+
+  // Step 4: clear backorders.settled_gr_id references to goods_receipts
+  await c(query(`UPDATE backorders SET settled_gr_id = NULL
+    WHERE settled_gr_id IN (SELECT id FROM goods_receipts WHERE warehouse_id = $1)`, [warehouseId]));
+
+  // Step 5: AP chain (ap_payment_allocations → ap_bills → goods_receipts)
+  await c(query(`DELETE FROM ap_payment_allocations WHERE bill_id IN (
+    SELECT id FROM ap_bills WHERE gr_id IN (
+      SELECT id FROM goods_receipts WHERE warehouse_id = $1))`, [warehouseId]));
+  await c(query(`DELETE FROM ap_bills WHERE gr_id IN (
+    SELECT id FROM goods_receipts WHERE warehouse_id = $1)`, [warehouseId]));
+
+  // Step 6: landed cost components → goods_receipts
+  await c(query(`DELETE FROM landed_cost_components WHERE gr_id IN (
+    SELECT id FROM goods_receipts WHERE warehouse_id = $1)`, [warehouseId]));
+
+  // Step 7: goods_receipt_items and goods_receipts
   await query(`DELETE FROM goods_receipt_items WHERE gr_id IN (
     SELECT id FROM goods_receipts WHERE warehouse_id = $1)`, [warehouseId]);
   await query('DELETE FROM goods_receipts WHERE warehouse_id = $1', [warehouseId]);
-  await query(`DELETE FROM purchase_order_items WHERE po_id IN (
-    SELECT id FROM purchase_orders WHERE warehouse_id = $1)`, [warehouseId]);
+
+  // Step 8: purchase order items and orders
+  await c(query(`DELETE FROM purchase_order_items WHERE po_id IN (
+    SELECT id FROM purchase_orders WHERE warehouse_id = $1)`, [warehouseId]));
   await query('DELETE FROM purchase_orders WHERE warehouse_id = $1', [warehouseId]);
   await query('DELETE FROM warehouses WHERE id = $1', [warehouseId]);
-  if (supplierId) await query('DELETE FROM suppliers WHERE id = $1', [supplierId]);
-  if (productId) await query('DELETE FROM products WHERE id = $1', [productId]);
-  try { await query(`DELETE FROM users WHERE username LIKE 'test_mgr_2a_%'`); } catch {}
+
+  if (supplierId) await c(query('DELETE FROM suppliers WHERE id = $1', [supplierId]));
+  if (productId) await c(query('DELETE FROM products WHERE id = $1', [productId]));
+  await c(query(`DELETE FROM users WHERE username LIKE 'test_mgr_2a_%'`));
   await new Promise(resolve => server.close(resolve));
 });
 

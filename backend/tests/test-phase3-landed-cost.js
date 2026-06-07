@@ -103,10 +103,8 @@ before(async () => {
 });
 
 after(async () => {
-  await query('DELETE FROM sales_cogs_adjustments WHERE batch_id IN (SELECT id FROM stock_batches WHERE product_id IN ($1,$2))', [product1Id, product2Id]).catch(() => {});
-  await query('DELETE FROM inventory_transactions WHERE product_id IN ($1,$2)', [product1Id, product2Id]).catch(() => {});
+  await query('SELECT test_cleanup_by_products($1)', [[product1Id, product2Id]]).catch(() => {});
   await query('DELETE FROM landed_cost_components WHERE gr_id=$1', [grId]).catch(() => {});
-  await query('DELETE FROM stock_batches WHERE product_id IN ($1,$2)', [product1Id, product2Id]).catch(() => {});
   await query('DELETE FROM goods_receipt_items WHERE gr_id=$1', [grId]).catch(() => {});
   await query('DELETE FROM goods_receipts WHERE id=$1', [grId]).catch(() => {});
   await query(`DELETE FROM purchase_order_items WHERE product_id IN ($1,$2)`, [product1Id, product2Id]).catch(() => {});

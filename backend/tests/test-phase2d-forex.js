@@ -63,14 +63,13 @@ after(async () => {
     await query(`DELETE FROM ${t} WHERE supplier_id=$1 OR customer_id=$2`,
       [supplierId, customerId]).catch(() => {});
   }
-  await query('DELETE FROM inventory_transactions WHERE product_id=$1', [productId]).catch(() => {});
+  await query('SELECT test_cleanup_by_products($1)', [[productId]]).catch(() => {});
   await query('DELETE FROM backorders WHERE product_id=$1', [productId]).catch(() => {});
-  await query('DELETE FROM sales_cogs_adjustments WHERE sd_item_id IN (SELECT id FROM sales_delivery_items WHERE product_id=$1)', [productId]).catch(() => {});
+  await query('DELETE FROM sales_cogs_adjustments WHERE batch_id IN (SELECT id FROM stock_batches WHERE product_id=$1)', [productId]).catch(() => {});
   await query('DELETE FROM sales_delivery_items WHERE product_id=$1', [productId]).catch(() => {});
   await query('DELETE FROM sales_deliveries WHERE so_id IN (SELECT id FROM sales_orders WHERE customer_id=$1)', [customerId]).catch(() => {});
   await query('DELETE FROM sales_order_items WHERE product_id=$1', [productId]).catch(() => {});
   await query('DELETE FROM sales_orders WHERE customer_id=$1', [customerId]).catch(() => {});
-  await query('DELETE FROM stock_batches WHERE product_id=$1', [productId]).catch(() => {});
   await query('DELETE FROM goods_receipt_items WHERE product_id=$1', [productId]).catch(() => {});
   await query('DELETE FROM goods_receipts WHERE warehouse_id=$1', [warehouseId]).catch(() => {});
   await query('DELETE FROM purchase_order_items WHERE product_id=$1', [productId]).catch(() => {});
