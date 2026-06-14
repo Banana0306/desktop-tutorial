@@ -57,8 +57,30 @@ ul { list-style: none; }
   max-width: 1180px; margin: 0 auto; padding: 0 24px;
   height: 100%; display: flex; align-items: center; justify-content: space-between;
 }
-.nav-logo { display: flex; align-items: center; }
-.logo-svg { height: 44px; width: auto; }
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  /* Dark bg logo blends into our dark navbar */
+  border-radius: 6px;
+}
+.nav-company {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  display: none; /* show on larger screens */
+}
+@media (min-width: 900px) {
+  .nav-company { display: block; }
+}
 
 .nav-links { display: flex; align-items: center; gap: 32px; }
 .nav-links a {
@@ -154,7 +176,18 @@ ul { list-style: none; }
   font-size: 0.78rem; letter-spacing: 0.28em; text-transform: uppercase;
   color: var(--color-accent); margin-bottom: 20px; font-weight: 600;
 }
-.hero-logo-wrap { margin-bottom: 20px; }
+.hero-logo-wrap {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+.hero-logo-img {
+  width: min(320px, 70vw);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 32px rgba(245,195,0,0.25));
+  border-radius: 12px;
+}
 
 .hero-title {
   font-size: clamp(2.2rem, 5.5vw, 3.6rem); font-weight: 800;
@@ -372,6 +405,9 @@ ul { list-style: none; }
    ============================================= */
 .footer { background: var(--bg-nav); border-top: 1px solid var(--color-border); padding: 40px 0; }
 .footer-inner { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+.footer-logo { display: flex; align-items: center; gap: 12px; flex-direction: column; }
+.footer-logo-img { height: 60px; width: auto; object-fit: contain; border-radius: 6px; }
+.footer-company { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.05em; }
 .footer-links { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
 .footer-links a { font-size: 0.85rem; color: var(--text-muted); transition: color var(--transition); }
 .footer-links a:hover { color: var(--color-accent); }
