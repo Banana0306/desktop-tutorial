@@ -201,14 +201,44 @@ BEGIN:VEVENT
 UID:work-lunch-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
 DTSTART;TZID=Asia/Taipei:20260701T120000
-DTEND;TZID=Asia/Taipei:20260701T130000
-SUMMARY:🍱 午餐 + 🌱 英文Podcast
-DESCRIPTION:每日 12:00-13:00\n吃午餐的同時聽英文（被動學習）\n🎧 推薦播放清單：\n→ Business English Pod（商業英文對話）\n→ BBC Global News（新聞英文聽力）\n→ The Tim Ferriss Show（商業訪談）\n💡 不需要 100% 專注，邊吃邊聽就有效果\n→ 聽到不懂的詞，餐後 30 秒加入 Anki 單字卡
+DTEND;TZID=Asia/Taipei:20260701T123000
+SUMMARY:🍱 午餐
+DESCRIPTION:每日 12:00-12:30 午餐\n🎧 邊吃邊聽英文Podcast\n→ Business English Pod\n→ BBC Global News
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:🍱 午餐時間！記得開英文Podcast邊聽邊吃
+DESCRIPTION:🍱 午餐時間！記得開英文Podcast
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:walk-lunch-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T123000
+DTEND;TZID=Asia/Taipei:20260701T130000
+SUMMARY:🚶 飯後健走（30分鐘／累積步數）
+DESCRIPTION:每日 12:30-13:00 飯後健走\n🎯 目標：一次走 3,000-4,000 步\n🎧 同時聽英文Podcast → 步數 + 英文雙收！\n📍 路線選擇：\n→ 公司附近繞一圈\n→ 附近公園或商業街\n→ 跑業務空檔時在客戶附近走走\n💡 萬步法則：午餐走30分鐘 ≈ 3,500步\n下午跑業務 ≈ 3,000步\n晚上再補 3,500步 → 輕鬆達標！
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🚶 飯後健走時間！邊走邊聽英文，一石二鳥
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:steps-check-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T213000
+DTEND;TZID=Asia/Taipei:20260701T213500
+SUMMARY:👟 今天走到一萬步了嗎？
+DESCRIPTION:每日 21:30 步數確認（30秒）\n→ 開啟 iPhone「健康」App 查看步數\n✅ ≥ 10,000 步：達標！明天繼續\n⚠️  7,000-9,999步：出門快走 15 分鐘（約 1,500-2,000步）\n❌  < 7,000步：快走 20-30 分鐘補足\n\n💡 各日預估步數：\n週一（重訓）：約 7,000-8,000 → 補 2,000 步\n週二（籃球）：約 10,000+ → 通常達標\n週三四五（跑業務）：午餐走 + 拜訪約 8,000 → 補 2,000\n週六（重訓）：約 8,000 → 補 2,000\n週日（3對3）：約 10,000+ → 通常達標
+RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:👟 查一下今天的步數！距離一萬步還差多少？
 END:VALARM
 END:VEVENT
 
