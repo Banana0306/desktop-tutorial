@@ -20,45 +20,45 @@ END:VTIMEZONE
 BEGIN:VEVENT
 UID:meditation-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T063000
-DTEND;TZID=Asia/Taipei:20260701T064000
+DTSTART;TZID=Asia/Taipei:20260701T080000
+DTEND;TZID=Asia/Taipei:20260701T081000
 SUMMARY:🧠 早晨冥想（10分鐘）
-DESCRIPTION:靜心冥想 10 分鐘\n推薦 App：Insight Timer（免費）\n主題：Stress Relief\n每天不間斷，是一天清醒應戰的基礎
+DESCRIPTION:靜心冥想 10 分鐘\n推薦 App：Insight Timer（免費）\n主題：Stress Relief\n每天不間斷，是一天清醒應戰的基礎\n⏰ 08:00 起床後第一件事：冥想10分鐘再開始新的一天
 RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
 BEGIN:VALARM
-TRIGGER:-PT30M
+TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:🧠 30分鐘後：早晨冥想
+DESCRIPTION:🧠 起床了！先做10分鐘早晨冥想
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:english-daily-2026@ruicheng
+UID:commute-english-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T070000
-DTEND;TZID=Asia/Taipei:20260701T073000
-SUMMARY:🌱 商業英文學習（30分鐘）
-DESCRIPTION:商業英文學習 30 分鐘\n• Podcast：Business English Pod\n• Anki 單字複習\n• 外師課程單元\n每天不間斷，六個月後你會感謝自己
-RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
+DTSTART;TZID=Asia/Taipei:20260701T083000
+DTEND;TZID=Asia/Taipei:20260701T090000
+SUMMARY:🚲🌱 騎車通勤聽英文Podcast
+DESCRIPTION:騎車上班 08:30-09:00（30分鐘）= 每日商業英文學習時間！\n🎧 推薦 Podcast：\n• Business English Pod（商業情境對話）\n• BBC Global News（國際商業英文）\n• Coffee Break English（日常英文練習）\n💡 通勤聽英文技巧：\n→ 先聽一遍，騎到公司時在腦中默想重點\n→ 重複句子或影子跟讀（確保安全下）\n→ 把新單字記在手機備忘錄，午餐時複習\n一天30分鐘，六個月 = 90小時英文輸入！
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
-TRIGGER:-PT30M
+TRIGGER:-PT5M
 ACTION:DISPLAY
-DESCRIPTION:🌱 30分鐘後：英文學習時間
+DESCRIPTION:🚲 5分鐘後出發！戴耳機開英文Podcast再騎車
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
 UID:ai-checkin-weekday-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T083000
-DTEND;TZID=Asia/Taipei:20260701T083500
+DTSTART;TZID=Asia/Taipei:20260701T085500
+DTEND;TZID=Asia/Taipei:20260701T090000
 SUMMARY:💼 AI整理今日待辦（5分鐘）
-DESCRIPTION:用 AI 整理當日待辦清單（5分鐘）\n把今天最重要的 3 件事寫下來\n問 AI：「幫我整理今天的優先順序」
+DESCRIPTION:剛到公司！先用 AI 整理當日待辦清單（5分鐘）\n把今天最重要的 3 件事寫下來\n問 AI：「幫我整理今天的優先順序」\n確認今天有哪些事可以授權代理人處理
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:💼 AI整理今日待辦清單
+DESCRIPTION:💼 快到公司了！準備AI整理今日待辦
 END:VALARM
 END:VEVENT
 
@@ -227,20 +227,6 @@ DESCRIPTION:🚶 飯後健走！出門走 15 分鐘（約1,500步）
 END:VALARM
 END:VEVENT
 
-BEGIN:VEVENT
-UID:walk-breakfast-daily-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T074500
-DTEND;TZID=Asia/Taipei:20260701T080000
-SUMMARY:🚶 早餐後健走 15 分鐘
-DESCRIPTION:早餐後健走 15 分鐘（07:45-08:00）\n🎯 約 1,500 步\n📍 出門前在社區或附近走一圈\n💡 飯後輕度步行有助消化，也是一天的好開始\n🧠 走路時可以繼續背英文單字（Anki）\n一天三餐後各走15分鐘 → 合計 4,500 步！
-RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT0M
-ACTION:DISPLAY
-DESCRIPTION:🚶 早餐後健走 15 分鐘！出門走一圈再上班
-END:VALARM
-END:VEVENT
 
 BEGIN:VEVENT
 UID:walk-dinner-daily-2026@ruicheng
