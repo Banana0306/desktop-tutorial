@@ -65,26 +65,26 @@ END:VEVENT
 BEGIN:VEVENT
 UID:exercise-mwf-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T183000
-DTEND;TZID=Asia/Taipei:20260701T193000
+DTSTART;TZID=Asia/Taipei:20260701T190000
+DTEND;TZID=Asia/Taipei:20260701T200000
 SUMMARY:💪🌱 運動 / 籃球練習（60分鐘）
-DESCRIPTION:60 分鐘運動（週一、三、五）\n• 籃球技術訓練（BEEF投籃法）\n• 或重訓：深蹲、伏地挺身、棒式\n• 或慢跑 / HIIT\n體態 + 技術雙重提升！
+DESCRIPTION:60 分鐘運動（週一、三、五）\n18:00 結束客戶拜訪 → 回家換裝 → 19:00 出發\n• 籃球技術訓練（BEEF投籃法）\n• 或重訓：深蹲、伏地挺身、棒式\n• 或慢跑 / HIIT\n體態 + 籃球技術雙重提升！
 RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
-DESCRIPTION:💪 30分鐘後：出發運動！
+DESCRIPTION:💪 30分鐘後：換裝，準備出發運動！
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:family-time-daily-2026@ruicheng
+UID:family-time-weekday-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T200000
-DTEND;TZID=Asia/Taipei:20260701T210000
+DTSTART;TZID=Asia/Taipei:20260701T203000
+DTEND;TZID=Asia/Taipei:20260701T213000
 SUMMARY:🏠 家人陪伴時光（60分鐘）
-DESCRIPTION:不帶手機，專心陪伴家人 60 分鐘\n• 和孩子說故事、玩遊戲、問他今天\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
-RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
+DESCRIPTION:不帶手機，專心陪伴家人 60 分鐘\n【週一三五】運動結束後洗澡，約 20:30 陪伴\n【週二四】18:30 回家用餐後即可陪伴\n• 和孩子說故事、玩遊戲、問他今天如何\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
@@ -104,6 +104,81 @@ BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
 DESCRIPTION:🧠 30分鐘後：寫睡前日記
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:work-orders-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T090000
+DTEND;TZID=Asia/Taipei:20260701T100000
+SUMMARY:📋 處理客戶訂單（前一日）
+DESCRIPTION:每日 09:00-10:00\n處理前一天的客戶訂單\n💡 AI加速技巧：\n→ 把訂單確認信貼給AI，請它幫你快速整理異常項目\n→ 用AI草擬英文訂單確認回覆（3分鐘完成）\n→ 把重複性格式建成模板，每次只改數字
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT10M
+ACTION:DISPLAY
+DESCRIPTION:📋 10分鐘後：開始處理客戶訂單
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:work-sales-meeting-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T100000
+DTEND;TZID=Asia/Taipei:20260701T110000
+SUMMARY:👥 業務開會
+DESCRIPTION:每日 10:00-11:00\n業務團隊會議\n💡 AI加速技巧：\n→ 會議中用手機錄音，結束後貼給AI整理成會議記錄\n→ 請AI從會議重點中自動列出待辦事項\n→ 代理人可主持例行部分，你專注策略議題\n🌱 英文加分：試著在會議中用1-2句英文表達想法
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:👥 5分鐘後：業務開會
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:work-todo-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T110000
+DTEND;TZID=Asia/Taipei:20260701T120000
+SUMMARY:✅ 待辦事項處理
+DESCRIPTION:每日 11:00-12:00\n處理各項待辦任務\n💡 效率提升技巧：\n→ 用AI幫你起草英文客戶回覆（5分鐘完成1封）\n→ 優先處理「只有你能決定」的事，其餘授權代理人\n→ ERP上線後：訂單/庫存異常直接在系統追蹤\n🎯 目標：每天至少讓代理人承接1件待辦
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT5M
+ACTION:DISPLAY
+DESCRIPTION:✅ 待辦事項處理時間
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:work-lunch-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T120000
+DTEND;TZID=Asia/Taipei:20260701T130000
+SUMMARY:🍱 午餐 + 🌱 英文Podcast
+DESCRIPTION:每日 12:00-13:00\n吃午餐的同時聽英文（被動學習）\n🎧 推薦播放清單：\n→ Business English Pod（商業英文對話）\n→ BBC Global News（新聞英文聽力）\n→ The Tim Ferriss Show（商業訪談）\n💡 不需要 100% 專注，邊吃邊聽就有效果\n→ 聽到不懂的詞，餐後 30 秒加入 Anki 單字卡
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🍱 午餐時間！記得開英文Podcast邊聽邊吃
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:work-client-visits-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T140000
+DTEND;TZID=Asia/Taipei:20260701T180000
+SUMMARY:🚗 在外跑業務 / 客戶拜訪
+DESCRIPTION:每日 14:00-18:00\n外出拜訪客戶\n💡 路途中AI加速技巧：\n→ 開車時聽English Podcast（15分鐘/段）\n→ 拜訪結束立刻語音記錄客戶重點（備忘錄），晚上讓AI整理\n→ 若客戶有外語需求，用AI草擬英文跟進信\n🌱 外銷機會：留意客戶有無海外採購需求或可介紹的國際買主\n📱 代理人若有緊急狀況可依SOP先處理，你回程再確認
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT10M
+ACTION:DISPLAY
+DESCRIPTION:🚗 10分鐘後出發跑業務，記得帶名片和型錄
 END:VALARM
 END:VEVENT
 
