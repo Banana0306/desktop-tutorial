@@ -5,7 +5,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:瑞城六個月計劃
 X-WR-TIMEZONE:Asia/Taipei
-X-WR-CALDESC:瑞城六個月全方位發展計劃 2026.07-12
+X-WR-CALDESC:瑞城六個月全方位發展計劃 2026.06-12
 
 BEGIN:VTIMEZONE
 TZID:Asia/Taipei
@@ -20,8 +20,8 @@ END:VTIMEZONE
 BEGIN:VEVENT
 UID:meditation-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T080000
-DTEND;TZID=Asia/Taipei:20260701T081000
+DTSTART;TZID=Asia/Taipei:20260615T080000
+DTEND;TZID=Asia/Taipei:20260615T081000
 SUMMARY:🧠 早晨冥想（10分鐘）
 DESCRIPTION:靜心冥想 10 分鐘\n推薦 App：Insight Timer（免費）\n主題：Stress Relief\n每天不間斷，是一天清醒應戰的基礎\n⏰ 08:00 起床後第一件事：冥想10分鐘再開始新的一天
 RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
@@ -35,8 +35,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:commute-english-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T083000
-DTEND;TZID=Asia/Taipei:20260701T090000
+DTSTART;TZID=Asia/Taipei:20260615T083000
+DTEND;TZID=Asia/Taipei:20260615T090000
 SUMMARY:🚲🌱 騎車通勤聽英文Podcast
 DESCRIPTION:騎車上班 08:30-09:00（30分鐘）= 每日商業英文學習時間！\n🎧 推薦 Podcast：\n• Business English Pod（商業情境對話）\n• BBC Global News（國際商業英文）\n• Coffee Break English（日常英文練習）\n💡 通勤聽英文技巧：\n→ 先聽一遍，騎到公司時在腦中默想重點\n→ 重複句子或影子跟讀（確保安全下）\n→ 把新單字記在手機備忘錄，午餐時複習\n一天30分鐘，六個月 = 90小時英文輸入！
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -50,8 +50,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:ai-checkin-weekday-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T085500
-DTEND;TZID=Asia/Taipei:20260701T090000
+DTSTART;TZID=Asia/Taipei:20260615T085500
+DTEND;TZID=Asia/Taipei:20260615T090000
 SUMMARY:💼 AI整理今日待辦（5分鐘）
 DESCRIPTION:剛到公司！先用 AI 整理當日待辦清單（5分鐘）\n把今天最重要的 3 件事寫下來\n問 AI：「幫我整理今天的優先順序」\n確認今天有哪些事可以授權代理人處理
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -63,100 +63,10 @@ END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:sport-mon-retrain-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260706T210000
-DTEND;TZID=Asia/Taipei:20260706T220000
-SUMMARY:💪 重訓課｜北投運動中心
-DESCRIPTION:週一 21:00-22:00 重訓課\n📍 地點：北投運動中心\n🎯 本週訓練重點：\n• 深蹲、硬舉、臥推等複合動作\n• 記錄每次的重量與組數（追蹤進步）\n⏰ 20:40 出發，22:15 回到家\n💡 回家後記得寫睡前日記再睡覺
-RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT20M
-ACTION:DISPLAY
-DESCRIPTION:💪 20分鐘後出發！週一重訓課：北投運動中心
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:sport-tue-basketball-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260707T200000
-DTEND;TZID=Asia/Taipei:20260707T220000
-SUMMARY:🏀 5對5籃球｜北投運動中心
-DESCRIPTION:週二 20:00-22:00 室內5對5籃球\n📍 地點：北投運動中心\n🎯 本週技術重點（從計劃中選一個）：\n• 投籃：catch and shoot 節奏\n• 防守：滑步與 boxing out\n• 進攻：v cut 跑位和擋拆應用\n⏰ 19:40 出發，22:15 回到家\n🌱 英文加分：下次試著和隊友用英文講一個戰術
-RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT20M
-ACTION:DISPLAY
-DESCRIPTION:🏀 20分鐘後出發！週二5對5籃球：北投運動中心
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:family-time-mon-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260706T190000
-DTEND;TZID=Asia/Taipei:20260706T210000
-SUMMARY:🏠 家人時光（週一，21:00前出門重訓）
-DESCRIPTION:週一 19:00-21:00 家人陪伴\n18:30 回家用餐 → 19:00 陪孩子和另一半\n21:00 出發去北投運動中心重訓課\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 21:00 要出門，記得提前收心
-RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT0M
-ACTION:DISPLAY
-DESCRIPTION:🏠 開始家人時光！記得21:00要出發去重訓
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:family-time-tue-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260707T183000
-DTEND;TZID=Asia/Taipei:20260707T200000
-SUMMARY:🏠 家人時光（週二，20:00前出門打球）
-DESCRIPTION:週二 18:30-20:00 家人陪伴\n18:30 回家用餐 → 陪孩子和另一半\n20:00 出發去北投運動中心打5對5籃球\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 19:40 要出門，記得提前收心
-RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT0M
-ACTION:DISPLAY
-DESCRIPTION:🏠 開始家人時光！記得19:40要出發去打球
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:family-time-wthf-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T193000
-DTEND;TZID=Asia/Taipei:20260701T210000
-SUMMARY:🏠 家人陪伴時光（週三四五）
-DESCRIPTION:週三、四、五 19:30-21:00 家人陪伴\n18:30 回家用餐 → 19:30 開始陪伴\n不帶手機，專心陪家人 90 分鐘\n• 問孩子今天最開心和最不開心的事\n• 睡前故事 / 聊天 / 一起做活動\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
-RRULE:FREQ=WEEKLY;BYDAY=WE,TH,FR;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT30M
-ACTION:DISPLAY
-DESCRIPTION:🏠 30分鐘後：放下工作，陪伴家人
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:sleep-journal-daily-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T223000
-DTEND;TZID=Asia/Taipei:20260701T223500
-SUMMARY:🧠 睡前日記（5分鐘）
-DESCRIPTION:睡前記錄 5 分鐘\n✍️ 今天最好的一件事\n✍️ 明天一個期待\n✍️ 感恩3件小事（不限大小）\n積累六個月，你會看到不一樣的自己
-RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT30M
-ACTION:DISPLAY
-DESCRIPTION:🧠 30分鐘後：寫睡前日記
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
 UID:work-orders-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T090000
-DTEND;TZID=Asia/Taipei:20260701T100000
+DTSTART;TZID=Asia/Taipei:20260615T090000
+DTEND;TZID=Asia/Taipei:20260615T100000
 SUMMARY:📋 處理客戶訂單（前一日）
 DESCRIPTION:每日 09:00-10:00\n處理前一天的客戶訂單\n💡 AI加速技巧：\n→ 把訂單確認信貼給AI，請它幫你快速整理異常項目\n→ 用AI草擬英文訂單確認回覆（3分鐘完成）\n→ 把重複性格式建成模板，每次只改數字
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -170,8 +80,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:work-sales-meeting-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T100000
-DTEND;TZID=Asia/Taipei:20260701T110000
+DTSTART;TZID=Asia/Taipei:20260615T100000
+DTEND;TZID=Asia/Taipei:20260615T110000
 SUMMARY:👥 業務開會
 DESCRIPTION:每日 10:00-11:00\n業務團隊會議\n💡 AI加速技巧：\n→ 會議中用手機錄音，結束後貼給AI整理成會議記錄\n→ 請AI從會議重點中自動列出待辦事項\n→ 代理人可主持例行部分，你專注策略議題\n🌱 英文加分：試著在會議中用1-2句英文表達想法
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -185,8 +95,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:work-todo-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T110000
-DTEND;TZID=Asia/Taipei:20260701T120000
+DTSTART;TZID=Asia/Taipei:20260615T110000
+DTEND;TZID=Asia/Taipei:20260615T120000
 SUMMARY:✅ 待辦事項處理
 DESCRIPTION:每日 11:00-12:00\n處理各項待辦任務\n💡 效率提升技巧：\n→ 用AI幫你起草英文客戶回覆（5分鐘完成1封）\n→ 優先處理「只有你能決定」的事，其餘授權代理人\n→ ERP上線後：訂單/庫存異常直接在系統追蹤\n🎯 目標：每天至少讓代理人承接1件待辦
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -200,8 +110,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:work-lunch-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T120000
-DTEND;TZID=Asia/Taipei:20260701T123000
+DTSTART;TZID=Asia/Taipei:20260615T120000
+DTEND;TZID=Asia/Taipei:20260615T123000
 SUMMARY:🍱 午餐
 DESCRIPTION:每日 12:00-12:30 午餐\n🎧 邊吃邊聽英文Podcast\n→ Business English Pod\n→ BBC Global News\n吃完就出發健走 15 分鐘！
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
@@ -215,10 +125,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:walk-lunch-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T123000
-DTEND;TZID=Asia/Taipei:20260701T124500
+DTSTART;TZID=Asia/Taipei:20260615T123000
+DTEND;TZID=Asia/Taipei:20260615T124500
 SUMMARY:🚶 午餐後健走 15 分鐘
-DESCRIPTION:每日 12:30-12:45 飯後健走\n🎯 約 1,500 步\n🎧 繼續聽英文Podcast → 步數 + 英文雙收！\n📍 就近繞一圈即可，不需要走遠\n習慣養成：每餐後 15 分鐘，一天三次，共 4,500 步！
+DESCRIPTION:每日 12:30-12:45 飯後健走\n🎯 約 1,500 步\n🎧 繼續聽英文Podcast → 步數 + 英文雙收！\n📍 就近繞一圈即可，不需要走遠\n習慣養成：每餐後 15 分鐘，合計 3,000+ 步！
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
@@ -227,12 +137,116 @@ DESCRIPTION:🚶 飯後健走！出門走 15 分鐘（約1,500步）
 END:VALARM
 END:VEVENT
 
+BEGIN:VEVENT
+UID:work-client-visits-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260615T140000
+DTEND;TZID=Asia/Taipei:20260615T180000
+SUMMARY:🚗 在外跑業務 / 客戶拜訪
+DESCRIPTION:每日 14:00-18:00\n外出拜訪客戶\n💡 路途中AI加速技巧：\n→ 開車時聽English Podcast（15分鐘/段）\n→ 拜訪結束立刻語音記錄客戶重點（備忘錄），晚上讓AI整理\n→ 若客戶有外語需求，用AI草擬英文跟進信\n🌱 外銷機會：留意客戶有無海外採購需求或可介紹的國際買主\n📱 代理人若有緊急狀況可依SOP先處理，你回程再確認
+RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT10M
+ACTION:DISPLAY
+DESCRIPTION:🚗 10分鐘後出發跑業務，記得帶名片和型錄
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-mon-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260615T190000
+DTEND;TZID=Asia/Taipei:20260615T210000
+SUMMARY:🏠 家人時光（週一，21:00前出門重訓）
+DESCRIPTION:週一 19:00-21:00 家人陪伴\n18:30 回家用餐 → 19:00 陪孩子和另一半\n21:00 出發去北投運動中心重訓課\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 21:00 要出門，記得提前收心
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🏠 開始家人時光！記得21:00要出發去重訓
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:sport-mon-retrain-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260615T210000
+DTEND;TZID=Asia/Taipei:20260615T220000
+SUMMARY:💪 重訓課｜北投運動中心
+DESCRIPTION:週一 21:00-22:00 重訓課\n📍 地點：北投運動中心\n🎯 本週訓練重點：\n• 深蹲、硬舉、臥推等複合動作\n• 記錄每次的重量與組數（追蹤進步）\n⏰ 20:40 出發，22:15 回到家\n💡 回家後記得寫睡前日記再睡覺
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT20M
+ACTION:DISPLAY
+DESCRIPTION:💪 20分鐘後出發！週一重訓課：北投運動中心
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-tue-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260616T183000
+DTEND;TZID=Asia/Taipei:20260616T200000
+SUMMARY:🏠 家人時光（週二，20:00前出門打球）
+DESCRIPTION:週二 18:30-20:00 家人陪伴\n18:30 回家用餐 → 陪孩子和另一半\n20:00 出發去北投運動中心打5對5籃球\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 19:40 要出門，記得提前收心
+RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🏠 開始家人時光！記得19:40要出發去打球
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:sport-tue-basketball-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260616T200000
+DTEND;TZID=Asia/Taipei:20260616T220000
+SUMMARY:🏀 5對5籃球｜北投運動中心
+DESCRIPTION:週二 20:00-22:00 室內5對5籃球\n📍 地點：北投運動中心\n🎯 本週技術重點（從計劃中選一個）：\n• 投籃：catch and shoot 節奏\n• 防守：滑步與 boxing out\n• 進攻：v cut 跑位和擋拆應用\n⏰ 19:40 出發，22:15 回到家\n🌱 英文加分：下次試著和隊友用英文講一個戰術
+RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT20M
+ACTION:DISPLAY
+DESCRIPTION:🏀 20分鐘後出發！週二5對5籃球：北投運動中心
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-wthf-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260617T193000
+DTEND;TZID=Asia/Taipei:20260617T210000
+SUMMARY:🏠 家人陪伴時光（週三四五）
+DESCRIPTION:週三、四、五 19:30-21:00 家人陪伴\n18:30 回家用餐 → 19:30 開始陪伴\n不帶手機，專心陪家人 90 分鐘\n• 問孩子今天最開心和最不開心的事\n• 睡前故事 / 聊天 / 一起做活動\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
+RRULE:FREQ=WEEKLY;BYDAY=WE,TH,FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:🏠 30分鐘後：放下工作，陪伴家人
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:weekly-review-fri-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260619T173000
+DTEND;TZID=Asia/Taipei:20260619T180000
+SUMMARY:📋 每週回顧 & 下週計劃
+DESCRIPTION:每週五 30 分鐘回顧\n✅ 打勾本週完成的項目\n📝 記錄問題與收穫\n🎯 確認下週重點\n持續回顧是計劃成功的關鍵
+RRULE:FREQ=WEEKLY;BYDAY=FR;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:📋 每週回顧時間到！
+END:VALARM
+END:VEVENT
 
 BEGIN:VEVENT
 UID:walk-dinner-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T190000
-DTEND;TZID=Asia/Taipei:20260701T191500
+DTSTART;TZID=Asia/Taipei:20260615T190000
+DTEND;TZID=Asia/Taipei:20260615T191500
 SUMMARY:🚶 晚餐後健走 15 分鐘
 DESCRIPTION:晚餐後健走 15 分鐘（19:00-19:15）\n🎯 約 1,500 步\n📍 帶著孩子或另一半一起走 → 健走 + 親子時光！\n💡 晚餐後步行可以幫助穩定血糖、促進消化\n🏠 邊走邊聊天，比坐在客廳更有品質的家人時間\n【週一】19:00 家人時光，可以一起出門走走\n【週二】18:30 家人時光，可以一起出門走走\n【週三四五】19:30 前可出門走一圈
 RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
@@ -246,10 +260,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:steps-check-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T213000
-DTEND;TZID=Asia/Taipei:20260701T213500
+DTSTART;TZID=Asia/Taipei:20260615T213000
+DTEND;TZID=Asia/Taipei:20260615T213500
 SUMMARY:👟 今天走到一萬步了嗎？
-DESCRIPTION:每日 21:30 步數確認（30秒）\n→ 開啟 iPhone「健康」App 查看步數\n\n三餐後各走15分鐘 ≈ 4,500步\n日常活動（上下班/跑業務）≈ 3,000-4,000步\n➡️ 合計接近 8,000-9,000步，再稍微補就達標！\n\n✅ ≥ 10,000步：達標！打個勾繼續\n⚠️  8,000-9,999步：出門快走 10 分鐘補足\n❌  < 8,000步：快走 20 分鐘，或明天加強\n\n週一（重訓+三餐走）：預估 9,000+ → 幾乎達標\n週二（籃球+三餐走）：預估 12,000+ → 輕鬆達標\n週三四五（業務+三餐走）：預估 8,500+ → 接近達標\n週六（重訓+三餐走）：預估 9,000+ → 幾乎達標\n週日（3對3+三餐走）：預估 12,000+ → 輕鬆達標
+DESCRIPTION:每日 21:30 步數確認（30秒）\n→ 開啟 iPhone「健康」App 查看步數\n\n三餐後各走15分鐘 ≈ 4,500步\n日常活動（上下班/跑業務）≈ 3,000-4,000步\n➡️ 合計接近 8,000-9,000步，再稍微補就達標！\n\n✅ ≥ 10,000步：達標！打個勾繼續\n⚠️  8,000-9,999步：出門快走 10 分鐘補足\n❌  < 8,000步：快走 20 分鐘，或明天加強\n\n週一（重訓+餐後走）：預估 9,000+ → 幾乎達標\n週二（籃球+餐後走）：預估 12,000+ → 輕鬆達標\n週三四五（業務+餐後走）：預估 8,500+ → 接近達標\n週六（重訓+餐後走）：預估 9,000+ → 幾乎達標\n週日（3對3+餐後走）：預估 12,000+ → 輕鬆達標
 RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
@@ -259,43 +273,28 @@ END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:work-client-visits-daily-2026@ruicheng
+UID:sleep-journal-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T140000
-DTEND;TZID=Asia/Taipei:20260701T180000
-SUMMARY:🚗 在外跑業務 / 客戶拜訪
-DESCRIPTION:每日 14:00-18:00\n外出拜訪客戶\n💡 路途中AI加速技巧：\n→ 開車時聽English Podcast（15分鐘/段）\n→ 拜訪結束立刻語音記錄客戶重點（備忘錄），晚上讓AI整理\n→ 若客戶有外語需求，用AI草擬英文跟進信\n🌱 外銷機會：留意客戶有無海外採購需求或可介紹的國際買主\n📱 代理人若有緊急狀況可依SOP先處理，你回程再確認
-RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+DTSTART;TZID=Asia/Taipei:20260615T223000
+DTEND;TZID=Asia/Taipei:20260615T223500
+SUMMARY:🧠 睡前日記（5分鐘）
+DESCRIPTION:睡前記錄 5 分鐘\n✍️ 今天最好的一件事\n✍️ 明天一個期待\n✍️ 感恩3件小事（不限大小）\n積累六個月，你會看到不一樣的自己
+RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
 BEGIN:VALARM
-TRIGGER:-PT10M
+TRIGGER:-PT30M
 ACTION:DISPLAY
-DESCRIPTION:🚗 10分鐘後出發跑業務，記得帶名片和型錄
-END:VALARM
-END:VEVENT
-
-BEGIN:VEVENT
-UID:weekly-review-fri-2026@ruicheng
-DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260703T173000
-DTEND;TZID=Asia/Taipei:20260703T180000
-SUMMARY:📋 每週回顧 & 下週計劃
-DESCRIPTION:每週五 30 分鐘回顧\n✅ 打勾本週完成的項目\n📝 記錄問題與收穫\n🎯 確認下週重點\n持續回顧是計劃成功的關鍵
-RRULE:FREQ=WEEKLY;BYDAY=FR;UNTIL=20261231T155959Z
-BEGIN:VALARM
-TRIGGER:-PT0M
-ACTION:DISPLAY
-DESCRIPTION:📋 每週回顧時間到！
+DESCRIPTION:🧠 30分鐘後：寫睡前日記
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
 UID:sport-sat-retrain-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260704T100000
-DTEND;TZID=Asia/Taipei:20260704T113000
+DTSTART;TZID=Asia/Taipei:20260620T100000
+DTEND;TZID=Asia/Taipei:20260620T113000
 SUMMARY:💪 重訓自主訓練｜北投運動中心
 DESCRIPTION:週六 10:00-11:30 重訓自主訓練\n📍 地點：北投運動中心\n🎯 自主訓練計劃（依週目標調整）：\n• 胸：臥推 4x8、飛鳥 3x12\n• 背：引體向上 4x8、划船 3x12\n• 腿：深蹲 4x8、腿推 3x12\n📝 記錄訓練數據，每月追蹤進步\n✅ 訓練後返家，接續家庭日下午活動
-RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=20261227T155959Z
+RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=20261226T155959Z
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
@@ -306,11 +305,11 @@ END:VEVENT
 BEGIN:VEVENT
 UID:sport-sun-basketball-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260705T090000
-DTEND;TZID=Asia/Taipei:20260705T110000
+DTSTART;TZID=Asia/Taipei:20260621T090000
+DTEND;TZID=Asia/Taipei:20260621T110000
 SUMMARY:🏀 3對3鬥牛籃球｜洲美橋下籃球場
 DESCRIPTION:週日 09:00-11:00 3對3鬥牛籃球\n📍 地點：洲美橋下籃球場（戶外）\n🎯 本週技術重點（輪流練）：\n• 個人進攻套路（你專屬的 2-3 個動作）\n• 弱手上籃（每次至少練 5 顆）\n• 防守積極性（每場搶 X 個籃板目標）\n💡 3對3 = 最多球觸球機會，是進步最快的模式\n✅ 11:00 結束 → 回家接續家庭日活動
-RRULE:FREQ=WEEKLY;BYDAY=SU;UNTIL=20261228T155959Z
+RRULE:FREQ=WEEKLY;BYDAY=SU;UNTIL=20261227T155959Z
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
@@ -321,11 +320,11 @@ END:VEVENT
 BEGIN:VEVENT
 UID:family-day-sat-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260704
-DTEND;VALUE=DATE:20260705
+DTSTART;VALUE=DATE:20260620
+DTEND;VALUE=DATE:20260621
 SUMMARY:🏠 家庭日（週六）
 DESCRIPTION:今天是家庭日！\n• 執行本週親子活動計劃\n• 全天不排工作行程\n• 帶孩子出去走走\n• 和另一半一起做一件喜歡的事
-RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=20261227
+RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=20261226
 BEGIN:VALARM
 TRIGGER:PT9H
 ACTION:DISPLAY
@@ -336,15 +335,29 @@ END:VEVENT
 BEGIN:VEVENT
 UID:family-day-sun-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260705
-DTEND;VALUE=DATE:20260706
+DTSTART;VALUE=DATE:20260621
+DTEND;VALUE=DATE:20260622
 SUMMARY:🏠 家庭日（週日）
 DESCRIPTION:今天也是家庭日！\n• 家庭早午餐（不趕時間）\n• 親子活動或戶外運動\n• 晚間家庭感恩分享：每人說一件感謝的事
-RRULE:FREQ=WEEKLY;BYDAY=SU;UNTIL=20261228
+RRULE:FREQ=WEEKLY;BYDAY=SU;UNTIL=20261227
 BEGIN:VALARM
 TRIGGER:PT9H
 ACTION:DISPLAY
 DESCRIPTION:🏠 週日家庭時光！
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:monthly-review-jun-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260630T170000
+DTEND;TZID=Asia/Taipei:20260630T180000
+SUMMARY:📊 6月月底回顧（60分鐘）
+DESCRIPTION:6月成果確認（計劃第1-2週）\n□ 計劃正式啟動了嗎？\n□ 英文學習第一週感覺如何？\n□ 第一次重訓 / 籃球打了嗎？\n□ ERP初步討論開始了嗎？\n□ 冥想習慣建立起來了嗎？\n□ 家庭日有執行嗎？\n誠實面對自己，為接下來的計劃打好基礎
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:📊 6月月底回顧開始！計劃啟動兩週，成效如何？
 END:VALARM
 END:VEVENT
 
@@ -424,7 +437,7 @@ DTSTAMP:20260614T000000Z
 DTSTART;TZID=Asia/Taipei:20261218T140000
 DTEND;TZID=Asia/Taipei:20261218T160000
 SUMMARY:🎉 六個月總回顧（2小時）
-DESCRIPTION:六個月計劃大結局！\n✅ 填寫九大目標成果總結報告\n📊 對比7月vs12月的自己\n🎯 設定2027年三大目標\n🏆 慶祝這半年所有的努力與成長\n你值得被好好肯定！
+DESCRIPTION:六個月計劃大結局！\n✅ 填寫九大目標成果總結報告\n📊 對比6月vs12月的自己\n🎯 設定2027年三大目標\n🏆 慶祝這半年所有的努力與成長\n你值得被好好肯定！
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
@@ -435,10 +448,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week01-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260701
-DTEND;VALUE=DATE:20260702
+DTSTART;VALUE=DATE:20260615
+DTEND;VALUE=DATE:20260616
 SUMMARY:📅 第1週｜全面盤點
-DESCRIPTION:【7/1-7/5 本週主題：評估現狀】\n🏠 家庭：問孩子半年想做3件事｜設定每週家庭日\n🌱 英文：CEFR自測｜決定學習方式\n🌱 籃球：評估現況｜找到練球場地\n💼 ERP：召開流程盤點會議｜確認預算\n💼 AI：試用Claude/ChatGPT\n💼 外銷：整理外銷客戶清單\n💪 量測基礎數值：體重/體脂/腰圍\n🧠 下載Insight Timer，完成首次冥想
+DESCRIPTION:【6/15-6/19 本週主題：評估現狀】\n🏠 家庭：問孩子半年想做3件事｜設定每週家庭日\n🌱 英文：CEFR自測｜決定學習方式\n🌱 籃球：評估現況｜找到練球場地\n💼 ERP：召開流程盤點會議｜確認預算\n💼 AI：試用Claude/ChatGPT\n💼 外銷：整理外銷客戶清單\n💪 量測基礎數值：體重/體脂/腰圍\n🧠 下載Insight Timer，完成首次冥想
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -449,10 +462,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week02-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260706
-DTEND;VALUE=DATE:20260707
+DTSTART;VALUE=DATE:20260622
+DTEND;VALUE=DATE:20260623
 SUMMARY:📅 第2週｜選定工具與方案
-DESCRIPTION:【7/6-7/12 本週主題：工具選定】\n🏠 家庭：和孩子做他選的活動｜無手機晚餐\n🌱 英文：報名外師課（iTalki）｜Anki建立20個單字\n🌱 籃球：基礎運球200下｜BEEF投籃姿勢\n💼 ERP：邀請廠商簡報｜準備需求清單\n💼 AI：學3個Prompt技巧\n💼 外銷：TradMap查詢HS Code\n💪 完成第一次運動\n🧠 壓力日記啟動
+DESCRIPTION:【6/22-6/26 本週主題：工具選定】\n🏠 家庭：和孩子做他選的活動｜無手機晚餐\n🌱 英文：報名外師課（iTalki）｜Anki建立20個單字\n🌱 籃球：基礎運球200下｜BEEF投籃姿勢\n💼 ERP：邀請廠商簡報｜準備需求清單\n💼 AI：學3個Prompt技巧\n💼 外銷：TradMap查詢HS Code\n💪 完成第一次運動\n🧠 壓力日記啟動
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -463,10 +476,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week03-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260713
-DTEND;VALUE=DATE:20260714
+DTSTART;VALUE=DATE:20260629
+DTEND;VALUE=DATE:20260630
 SUMMARY:📅 第3週｜啟動執行
-DESCRIPTION:【7/13-7/19 本週主題：正式開始】\n🏠 家庭：建立睡前儀式（說故事/聊天）\n🌱 英文：完成第一堂外師課｜建立4個Email模板\n🌱 籃球：行進間運球｜每次練球投50球\n💼 ERP：廠商評比｜選定代理人培養對象\n💼 AI：AI整理會議記錄\n💼 外銷：選定2個目標市場\n💪 本週運動3次\n🧠 學習Box Breathing四方呼吸法
+DESCRIPTION:【6/29-7/3 本週主題：正式開始】\n🏠 家庭：建立睡前儀式（說故事/聊天）\n🌱 英文：完成第一堂外師課｜建立4個Email模板\n🌱 籃球：行進間運球｜每次練球投50球\n💼 ERP：廠商評比｜選定代理人培養對象\n💼 AI：AI整理會議記錄\n💼 外銷：選定2個目標市場\n💪 本週運動3次\n🧠 學習Box Breathing四方呼吸法
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -477,24 +490,24 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week04-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260720
-DTEND;VALUE=DATE:20260721
+DTSTART;VALUE=DATE:20260706
+DTEND;VALUE=DATE:20260707
 SUMMARY:📅 第4週｜第一次週期回顧
-DESCRIPTION:【7/20-7/26 本週主題：第一次回顧】\n🏠 家庭：完成7月2個家庭活動｜給孩子寫便條\n🌱 英文：完成4堂課｜獨立寫一封英文信\n🌱 籃球：左手上籃練習｜看一場NBA比賽\n💼 ERP：廠商選定！合約談判\n💼 AI：建立Prompt模板庫\n💼 外銷：第一封英文開發信草稿\n💪 7月體態紀錄\n🧠 設定每晚9點後斷線時間
+DESCRIPTION:【7/6-7/10 本週主題：第一次回顧】\n🏠 家庭：完成6月2個家庭活動｜給孩子寫便條\n🌱 英文：完成4堂課｜獨立寫一封英文信\n🌱 籃球：左手上籃練習｜看一場NBA比賽\n💼 ERP：廠商選定！合約談判\n💼 AI：建立Prompt模板庫\n💼 外銷：第一封英文開發信草稿\n💪 第一個月體態紀錄\n🧠 設定每晚9點後斷線時間
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
-DESCRIPTION:📅 第4週開始！今週重點：7月第一次回顧
+DESCRIPTION:📅 第4週開始！今週重點：第一次回顧
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
 UID:week05-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260727
-DTEND;VALUE=DATE:20260728
+DTSTART;VALUE=DATE:20260713
+DTEND;VALUE=DATE:20260714
 SUMMARY:📅 第5週｜加速推進
-DESCRIPTION:【7/27-8/2 本週主題：加速推進】\n🏠 家庭：開始每週家庭會議（15分鐘）\n🌱 英文：商業對話訓練｜Elsa發音練習\n🌱 籃球：跳投練習（接球→對齊→起跳→出手）\n💼 ERP：合約簽署！啟動會議\n💼 AI：用AI摘要Email\n💼 外銷：發出第一批開發信（10封）\n💪 加入自重肌力訓練\n🧠 冥想升級為每次15分鐘
+DESCRIPTION:【7/13-7/17 本週主題：加速推進】\n🏠 家庭：開始每週家庭會議（15分鐘）\n🌱 英文：商業對話訓練｜Elsa發音練習\n🌱 籃球：跳投練習（接球→對齊→起跳→出手）\n💼 ERP：合約簽署！啟動會議\n💼 AI：用AI摘要Email\n💼 外銷：發出第一批開發信（10封）\n💪 加入自重肌力訓練\n🧠 冥想升級為每次15分鐘
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -505,10 +518,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week06-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260803
-DTEND;VALUE=DATE:20260804
+DTSTART;VALUE=DATE:20260720
+DTEND;VALUE=DATE:20260721
 SUMMARY:📅 第6週｜🎯第一個里程碑
-DESCRIPTION:【8/3-8/9 本週重要里程碑！】\n🏠 家庭：安排兩人約會（不帶孩子）\n🌱 英文：⭐首次模擬視訊會議（15分鐘）！\n🌱 籃球：傳球練習｜v cut跑位技術\n💼 ERP：訂單模組建置啟動！客戶主檔匯入\n💼 AI：建立AI工作流程文件\n💼 外銷：分析開發信回覆率\n💪 維持每週3次運動\n🧠 學習漸進式肌肉放鬆（PMR）
+DESCRIPTION:【7/20-7/24 本週重要里程碑！】\n🏠 家庭：安排兩人約會（不帶孩子）\n🌱 英文：⭐首次模擬視訊會議（15分鐘）！\n🌱 籃球：傳球練習｜v cut跑位技術\n💼 ERP：訂單模組建置啟動！客戶主檔匯入\n💼 AI：建立AI工作流程文件\n💼 外銷：分析開發信回覆率\n💪 維持每週3次運動\n🧠 學習漸進式肌肉放鬆（PMR）
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -519,10 +532,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week07-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260810
-DTEND;VALUE=DATE:20260811
+DTSTART;VALUE=DATE:20260727
+DTEND;VALUE=DATE:20260728
 SUMMARY:📅 第7週｜深化練習
-DESCRIPTION:【8/10-8/16 本週主題：深化練習】\n🏠 家庭：和孩子一起選一本書，每天讀1-2頁\n🌱 英文：談判用語｜每天看Bloomberg 5分鐘\n🌱 籃球：深蹲跳+側向滑步｜1對1練習\n💼 ERP：訂單模組50%完成｜第三份SOP：跟催\n💼 AI：用AI做競品分析報告\n💼 外銷：研究認證需求（CE/UL）\n💪 嘗試恢復方式：伸展瑜珈\n🧠 情緒命名練習：說出情緒的名稱
+DESCRIPTION:【7/27-7/31 本週主題：深化練習】\n🏠 家庭：和孩子一起選一本書，每天讀1-2頁\n🌱 英文：談判用語｜每天看Bloomberg 5分鐘\n🌱 籃球：深蹲跳+側向滑步｜1對1練習\n💼 ERP：訂單模組50%完成｜第三份SOP：跟催\n💼 AI：用AI做競品分析報告\n💼 外銷：研究認證需求（CE/UL）\n💪 嘗試恢復方式：伸展瑜珈\n🧠 情緒命名練習：說出情緒的名稱
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -533,24 +546,24 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week08-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260817
-DTEND;VALUE=DATE:20260818
-SUMMARY:📅 第8週｜8月回顧
-DESCRIPTION:【8/17-8/23 本週主題：8月成果確認】\n🏠 家庭：8月家庭活動總結｜和另一半月度回顧\n🌱 英文：第二次模擬視訊（25分鐘）！\n🌱 籃球：8月技術複評：命中率/防守\n💼 ERP：訂單模組Bug修正完成\n💼 AI：統計8月AI節省時數\n💼 外銷：第二批開發信策略調整\n💪 8月體態複評\n🧠 8月心理健康評分（1-10分）
+DTSTART;VALUE=DATE:20260803
+DTEND;VALUE=DATE:20260804
+SUMMARY:📅 第8週｜8月啟動
+DESCRIPTION:【8/3-8/7 本週主題：8月新起點】\n🏠 家庭：8月家庭活動計劃確認｜和另一半月度回顧\n🌱 英文：第二次模擬視訊（25分鐘）！\n🌱 籃球：8月技術重點：命中率/防守\n💼 ERP：訂單模組Bug修正完成\n💼 AI：統計7月AI節省時數\n💼 外銷：第二批開發信策略調整\n💪 8月體態複評\n🧠 8月心理健康評分（1-10分）
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
-DESCRIPTION:📅 第8週！本週做8月回顧
+DESCRIPTION:📅 第8週！8月新開始，做一次月初確認
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
 UID:week09-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260824
-DTEND;VALUE=DATE:20260825
+DTSTART;VALUE=DATE:20260810
+DTEND;VALUE=DATE:20260811
 SUMMARY:📅 第9週｜實戰準備
-DESCRIPTION:【8/24-8/30 本週主題：準備實戰】\n🏠 家庭：和另一半討論家庭三年目標\n🌱 英文：進階客訴處理英文｜準備Q&A\n🌱 籃球：移動中投籃（catch and shoot）｜boxing out\n💼 ERP：訂單模組正式上線！第一次教育訓練\n💼 AI：用AI生成教育訓練材料\n💼 外銷：發出第二批開發信（20封）\n💪 提升運動強度，記錄睡眠\n🧠 正念生活：選一件事練習全程專注
+DESCRIPTION:【8/10-8/14 本週主題：準備實戰】\n🏠 家庭：和另一半討論家庭三年目標\n🌱 英文：進階客訴處理英文｜準備Q&A\n🌱 籃球：移動中投籃（catch and shoot）｜boxing out\n💼 ERP：訂單模組正式上線！第一次教育訓練\n💼 AI：用AI生成教育訓練材料\n💼 外銷：發出第二批開發信（20封）\n💪 提升運動強度，記錄睡眠\n🧠 正念生活：選一件事練習全程專注
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -561,10 +574,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week10-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260831
-DTEND;VALUE=DATE:20260901
+DTSTART;VALUE=DATE:20260817
+DTEND;VALUE=DATE:20260818
 SUMMARY:📅 第10週｜⚡ 實戰英文視訊！
-DESCRIPTION:【8/31-9/6 本週重要里程碑！】\n🏠 家庭：執行家庭一日遊！\n🌱 英文：⭐安排並完成與真實外國客戶的英文視訊！\n🌱 籃球：擋拆（Pick and Roll）原理｜弱手訓練\n💼 ERP：庫存模組需求討論\n💼 AI：建立英文溝通AI輔助流程\n💼 外銷：整理有回覆買主，研究展會時程\n💪 完整體態評估（第三個月開始）\n🧠 感恩日記啟動：每晚寫3件感謝的事
+DESCRIPTION:【8/17-8/21 本週重要里程碑！】\n🏠 家庭：執行家庭一日遊！\n🌱 英文：⭐安排並完成與真實外國客戶的英文視訊！\n🌱 籃球：擋拆（Pick and Roll）原理｜弱手訓練\n💼 ERP：庫存模組需求討論\n💼 AI：建立英文溝通AI輔助流程\n💼 外銷：整理有回覆買主，研究展會時程\n💪 完整體態評估（第三個月開始）\n🧠 感恩日記啟動：每晚寫3件感謝的事
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -575,10 +588,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week11-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260907
-DTEND;VALUE=DATE:20260908
+DTSTART;VALUE=DATE:20260824
+DTEND;VALUE=DATE:20260825
 SUMMARY:📅 第11週｜鞏固實戰成果
-DESCRIPTION:【9/7-9/13 本週主題：鞏固成果】\n🏠 家庭：和孩子做情緒教育活動\n🌱 英文：回顧視訊缺點，針對練習｜合約英文詞彙\n🌱 籃球：中距離命中率30%目標｜罰球例行程序\n💼 ERP：庫存模組建置｜第四份SOP：供應商比價\n💼 AI：市場情報整理週報\n💼 外銷：英文型錄第一版（Canva+AI）\n💪 嘗試HIIT訓練（20分鐘）\n🧠 學習自我慈悲
+DESCRIPTION:【8/24-8/28 本週主題：鞏固成果】\n🏠 家庭：和孩子做情緒教育活動\n🌱 英文：回顧視訊缺點，針對練習｜合約英文詞彙\n🌱 籃球：中距離命中率30%目標｜罰球例行程序\n💼 ERP：庫存模組建置｜第四份SOP：供應商比價\n💼 AI：市場情報整理週報\n💼 外銷：英文型錄第一版（Canva+AI）\n💪 嘗試HIIT訓練（20分鐘）\n🧠 學習自我慈悲
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -589,10 +602,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week12-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260914
-DTEND;VALUE=DATE:20260915
+DTSTART;VALUE=DATE:20260831
+DTEND;VALUE=DATE:20260901
 SUMMARY:📅 第12週｜深度優化
-DESCRIPTION:【9/14-9/20 本週主題：深度優化】\n🏠 家庭：和孩子做手作計劃｜討論親子教育觀\n🌱 英文：第三次模擬視訊（35分鐘+談判）！\n🌱 籃球：後撤步投籃｜分析自己的打球影片\n💼 ERP：庫存模組50%｜導出第一份訂單報表\n💼 AI：評估企業版AI工具\n💼 外銷：第一次正式海外買主視訊洽談\n💪 評估10週運動完成率\n🧠 安排一次完全放空的下午
+DESCRIPTION:【8/31-9/4 本週主題：深度優化】\n🏠 家庭：和孩子做手作計劃｜討論親子教育觀\n🌱 英文：第三次模擬視訊（35分鐘+談判）！\n🌱 籃球：後撤步投籃｜分析自己的打球影片\n💼 ERP：庫存模組50%｜導出第一份訂單報表\n💼 AI：評估企業版AI工具\n💼 外銷：第一次正式海外買主視訊洽談\n💪 評估10週運動完成率\n🧠 安排一次完全放空的下午
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -603,10 +616,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week13-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260921
-DTEND;VALUE=DATE:20260922
+DTSTART;VALUE=DATE:20260907
+DTEND;VALUE=DATE:20260908
 SUMMARY:📅 第13週｜9月回顧
-DESCRIPTION:【9/21-9/27 本週主題：9月成果確認】\n🏠 家庭：和家人回顧3個月最美好的時刻\n🌱 英文：9月學習總結，對比7月\n🌱 籃球：錄製投籃影片，對比第1週\n💼 ERP：庫存模組上線測試\n💼 AI：辦「AI工具分享會」（30分鐘）\n💼 外銷：整理Q3外銷漏斗數據\n💪 9月體態複評\n🧠 感恩日記找出10件最有力量的事
+DESCRIPTION:【9/7-9/11 本週主題：9月成果確認】\n🏠 家庭：和家人回顧3個月最美好的時刻\n🌱 英文：9月學習總結，對比6月\n🌱 籃球：錄製投籃影片，對比第1週\n💼 ERP：庫存模組上線測試\n💼 AI：辦「AI工具分享會」（30分鐘）\n💼 外銷：整理Q3外銷漏斗數據\n💪 9月體態複評\n🧠 感恩日記找出10件最有力量的事
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -617,10 +630,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week14-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20260928
-DTEND;VALUE=DATE:20260929
+DTSTART;VALUE=DATE:20260914
+DTEND;VALUE=DATE:20260915
 SUMMARY:📅 第14週｜系統整合啟動
-DESCRIPTION:【9/28-10/4 本週主題：整合優化】\n🏠 家庭：和孩子製作家庭目標板\n🌱 英文：英文商業簡報訓練｜錄製3分鐘介紹影片\n🌱 籃球：比賽智慧訓練｜嘗試5對5全場比賽！\n💼 ERP：庫存模組正式上線！採購模組需求\n💼 AI：ERP數據讓AI分析｜探索Zapier自動化\n💼 外銷：準備客製化報價方案\n💪 加入恢復日概念（每週1天休息）\n🧠 學習邊界設定，告訴同事你的不可打擾時段
+DESCRIPTION:【9/14-9/18 本週主題：整合優化】\n🏠 家庭：和孩子製作家庭目標板\n🌱 英文：英文商業簡報訓練｜錄製3分鐘介紹影片\n🌱 籃球：比賽智慧訓練｜嘗試5對5全場比賽！\n💼 ERP：庫存模組正式上線！採購模組需求\n💼 AI：ERP數據讓AI分析｜探索Zapier自動化\n💼 外銷：準備客製化報價方案\n💪 加入恢復日概念（每週1天休息）\n🧠 學習邊界設定，告訴同事你的不可打擾時段
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -631,10 +644,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week15-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261005
-DTEND;VALUE=DATE:20261006
+DTSTART;VALUE=DATE:20260921
+DTEND;VALUE=DATE:20260922
 SUMMARY:📅 第15週｜⭐ 獨立主持英文視訊！
-DESCRIPTION:【10/5-10/11 本週重要里程碑！】\n🏠 家庭：和孩子做感恩樹｜帶孩子去公司參觀\n🌱 英文：⭐獨立主持30分鐘英文視訊（無腳本）！\n🌱 籃球：防守積極性目標｜罰球50%目標\n💼 ERP：採購模組建置｜第二次ERP教育訓練\n💼 AI：每月自動生成業績摘要報告\n💼 外銷：第二次正式海外客戶視訊洽談\n💪 若體態停滯，記錄一週飲食（MyFitnessPal）\n🧠 心理彈性訓練：做一件輕微不舒服的事
+DESCRIPTION:【9/21-9/25 本週重要里程碑！】\n🏠 家庭：和孩子做感恩樹｜帶孩子去公司參觀\n🌱 英文：⭐獨立主持30分鐘英文視訊（無腳本）！\n🌱 籃球：防守積極性目標｜罰球50%目標\n💼 ERP：採購模組建置｜第二次ERP教育訓練\n💼 AI：每月自動生成業績摘要報告\n💼 外銷：第二次正式海外客戶視訊洽談\n💪 若體態停滯，記錄一週飲食（MyFitnessPal）\n🧠 心理彈性訓練：做一件輕微不舒服的事
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -645,10 +658,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week16-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261012
-DTEND;VALUE=DATE:20261013
+DTSTART;VALUE=DATE:20260928
+DTEND;VALUE=DATE:20260929
 SUMMARY:📅 第16週｜深化整合
-DESCRIPTION:【10/12-10/18 本週主題：深化整合】\n🏠 家庭：規劃年底家庭旅行｜製作時間膠囊\n🌱 英文：撰寫英文商業提案（請外師審閱）\n🌱 籃球：觀看打球影片對比進步｜參加聯誼賽\n💼 ERP：採購模組50%｜量化ERP節省人工時數\n💼 AI：英文提案AI潤色｜建立AI使用規範\n💼 外銷：Alibaba產品頁面更新\n💪 4週不中斷運動挑戰啟動！\n🧠 感恩表達：主動感謝一位你沒謝過的人
+DESCRIPTION:【9/28-10/2 本週主題：深化整合】\n🏠 家庭：規劃年底家庭旅行｜製作時間膠囊\n🌱 英文：撰寫英文商業提案（請外師審閱）\n🌱 籃球：觀看打球影片對比進步｜參加聯誼賽\n💼 ERP：採購模組50%｜量化ERP節省人工時數\n💼 AI：英文提案AI潤色｜建立AI使用規範\n💼 外銷：Alibaba產品頁面更新\n💪 4週不中斷運動挑戰啟動！\n🧠 感恩表達：主動感謝一位你沒謝過的人
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -659,10 +672,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week17-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261019
-DTEND;VALUE=DATE:20261020
+DTSTART;VALUE=DATE:20261005
+DTEND;VALUE=DATE:20261006
 SUMMARY:📅 第17週｜10月回顧
-DESCRIPTION:【10/19-10/25 本週主題：10月成果確認】\n🏠 家庭：家庭成就牆回顧，感謝家人的支持\n🌱 英文：外師重評進步幅度，比較7月影片\n🌱 籃球：4個月籃球進步評估\n💼 ERP：年底上線時程確認\n💼 AI：AI使用ROI計算\n💼 外銷：確認新客戶進入樣品階段\n💪 10月體態複評\n🧠 邊界設定效果分析
+DESCRIPTION:【10/5-10/9 本週主題：10月成果確認】\n🏠 家庭：家庭成就牆回顧，感謝家人的支持\n🌱 英文：外師重評進步幅度，比較6月影片\n🌱 籃球：4個月籃球進步評估\n💼 ERP：年底上線時程確認\n💼 AI：AI使用ROI計算\n💼 外銷：確認新客戶進入樣品階段\n💪 10月體態複評\n🧠 邊界設定效果分析
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -673,24 +686,24 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week18-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261026
-DTEND;VALUE=DATE:20261027
+DTSTART;VALUE=DATE:20261012
+DTEND;VALUE=DATE:20261013
 SUMMARY:📅 第18週｜成果盤點
-DESCRIPTION:【10/26-11/1 本週主題：成果盤點】\n🏠 家庭：讓孩子說出最喜歡的5個家庭時刻\n🌱 英文：4個月英文學習成果總結\n🌱 籃球：對抗性訓練｜帶孩子一起打籃球！\n💼 ERP：採購模組測試完成，三模組全部運作\n💼 AI：AI異常報警導入ERP\n💼 外銷：追蹤樣品測試｜最後一波開發信\n💪 讓運動成為不需要意志力的習慣\n🧠 感恩拜訪：告訴對你影響深遠的人你的感謝
+DESCRIPTION:【10/12-10/16 本週主題：成果盤點】\n🏠 家庭：讓孩子說出最喜歡的5個家庭時刻\n🌱 英文：4個月英文學習成果總結\n🌱 籃球：對抗性訓練｜帶孩子一起打籃球！\n💼 ERP：採購模組測試完成，三模組全部運作\n💼 AI：AI異常報警導入ERP\n💼 外銷：追蹤樣品測試｜最後一波開發信\n💪 讓運動成為不需要意志力的習慣\n🧠 感恩拜訪：告訴對你影響深遠的人你的感謝
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
-DESCRIPTION:📅 第18週！五個月過了，做成果盤點
+DESCRIPTION:📅 第18週！四個月過了，做成果盤點
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
 UID:week19-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261102
-DTEND;VALUE=DATE:20261103
+DTSTART;VALUE=DATE:20261019
+DTEND;VALUE=DATE:20261020
 SUMMARY:📅 第19週｜深化溝通能力
-DESCRIPTION:【11/2-11/8 本週主題：深化溝通】\n🏠 家庭：策劃家庭感恩日｜給另一半一個驚喜\n🌱 英文：英文電話溝通練習！\n🌱 籃球：5對5正式球局｜製作賽前熱身例程\n💼 ERP：採購模組正式上線！第三次ERP培訓\n💼 AI：AI業績預測（輸入歷史數據分析趨勢）\n💼 外銷：確認年底新客戶訂單\n💪 11月體態複評\n🧠 記錄心理資產清單
+DESCRIPTION:【10/19-10/23 本週主題：深化溝通】\n🏠 家庭：策劃家庭感恩日｜給另一半一個驚喜\n🌱 英文：英文電話溝通練習！\n🌱 籃球：5對5正式球局｜製作賽前熱身例程\n💼 ERP：採購模組正式上線！第三次ERP培訓\n💼 AI：AI業績預測（輸入歷史數據分析趨勢）\n💼 外銷：確認年底新客戶訂單\n💪 11月體態複評\n🧠 記錄心理資產清單
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -701,10 +714,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week20-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261109
-DTEND;VALUE=DATE:20261110
+DTSTART;VALUE=DATE:20261026
+DTEND;VALUE=DATE:20261027
 SUMMARY:📅 第20週｜強化弱點
-DESCRIPTION:【11/9-11/15 本週主題：強化弱點】\n🏠 家庭：和孩子一起製作家庭影片\n🌱 英文：最弱面向強化｜外師自由對話練習\n🌱 籃球：整理六個月進步清單｜親子籃球時光\n💼 ERP：全系統穩定性評估｜員工滿意度調查\n💼 AI：製作「公司AI使用手冊」正式版\n💼 外銷：英文版年度業績回顧報告\n💪 確認運動習慣已自動化\n🧠 成長型心態：3個挫折重新解讀
+DESCRIPTION:【10/26-10/30 本週主題：強化弱點】\n🏠 家庭：和孩子一起製作家庭影片\n🌱 英文：最弱面向強化｜外師自由對話練習\n🌱 籃球：整理進步清單｜親子籃球時光\n💼 ERP：全系統穩定性評估｜員工滿意度調查\n💼 AI：製作「公司AI使用手冊」正式版\n💼 外銷：英文版年度業績回顧報告\n💪 確認運動習慣已自動化\n🧠 成長型心態：3個挫折重新解讀
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -715,10 +728,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week21-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261116
-DTEND;VALUE=DATE:20261117
+DTSTART;VALUE=DATE:20261102
+DTEND;VALUE=DATE:20261103
 SUMMARY:📅 第21週｜11月回顧
-DESCRIPTION:【11/16-11/22 本週主題：11月成果確認】\n🏠 家庭：全家一起觀看家庭影片\n🌱 英文：寫下「我現在可以用英文做到的10件事」\n🌱 籃球：五個月技術自評表（運球/投籃/防守各1-10）\n💼 ERP/代理人/AI/外銷全面盤點\n💪 五個月體重體脂完整曲線\n🧠 五個月冥想天數統計，壓力曲線對比
+DESCRIPTION:【11/2-11/6 本週主題：11月成果確認】\n🏠 家庭：全家一起觀看家庭影片\n🌱 英文：寫下「我現在可以用英文做到的10件事」\n🌱 籃球：五個月技術自評表（運球/投籃/防守各1-10）\n💼 ERP/代理人/AI/外銷全面盤點\n💪 五個月體重體脂完整曲線\n🧠 五個月冥想天數統計，壓力曲線對比
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -729,10 +742,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week22-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261123
-DTEND;VALUE=DATE:20261124
+DTSTART;VALUE=DATE:20261109
+DTEND;VALUE=DATE:20261110
 SUMMARY:📅 第22週｜成果收割
-DESCRIPTION:【11/23-11/29 本週主題：成果收割】\n🏠 家庭：時間膠囊開封！討論2027家庭3件事\n🌱 英文：錄最終英文影片，對比7月初版\n🌱 籃球：最終技術影片對比第1週\n💼 ERP：完整導入成果報告\n💼 AI：計算全年AI節省時數和ROI\n💼 外銷：確認2家以上新客戶正式合作\n💪 讓運動成為生活一部分，不需要計劃\n🧠 給半年前的自己寫一封信
+DESCRIPTION:【11/9-11/13 本週主題：成果收割】\n🏠 家庭：時間膠囊開封！討論2027家庭3件事\n🌱 英文：錄最終英文影片，對比6月初版\n🌱 籃球：最終技術影片對比第1週\n💼 ERP：完整導入成果報告\n💼 AI：計算全年AI節省時數和ROI\n💼 外銷：確認2家以上新客戶正式合作\n💪 讓運動成為生活一部分，不需要計劃\n🧠 給半年前的自己寫一封信
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -743,10 +756,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week23-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261130
-DTEND;VALUE=DATE:20261201
+DTSTART;VALUE=DATE:20261116
+DTEND;VALUE=DATE:20261117
 SUMMARY:📅 第23週｜規劃2027
-DESCRIPTION:【11/30-12/6 本週主題：規劃明年】\n🏠 家庭：製作2027家庭願景板｜規劃家庭旅行\n🌱 英文：和外師討論2027英文計劃（TOEIC？）\n🌱 籃球：規劃2027籃球親子計劃\n💼 ERP：2027擴充方向（財務/BI/人資）\n💼 AI：規劃公司AI升級路線圖\n💼 外銷：制定2027外銷目標數字\n💪 設定2027體態目標\n🧠 設計2027心理健康年度計劃
+DESCRIPTION:【11/16-11/20 本週主題：規劃明年】\n🏠 家庭：製作2027家庭願景板｜規劃家庭旅行\n🌱 英文：和外師討論2027英文計劃（TOEIC？）\n🌱 籃球：規劃2027籃球親子計劃\n💼 ERP：2027擴充方向（財務/BI/人資）\n💼 AI：規劃公司AI升級路線圖\n💼 外銷：制定2027外銷目標數字\n💪 設定2027體態目標\n🧠 設計2027心理健康年度計劃
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -757,10 +770,10 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week24-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261207
-DTEND;VALUE=DATE:20261208
+DTSTART;VALUE=DATE:20261123
+DTEND;VALUE=DATE:20261124
 SUMMARY:📅 第24週｜最終衝刺
-DESCRIPTION:【12/7-12/13 本週主題：最終衝刺】\n🏠 家庭：舉辦家庭慶祝派對！｜孩子成長紀錄冊\n🌱 英文：六個月英文最終評估\n🌱 籃球：最終慶祝球賽！\n💼 ERP：完成全年導入成果報告\n💼 AI：AI使用手冊2.0最終版\n💼 外銷：完成2027外銷策略報告\n💪 年底體態最終評估，犒賞自己！\n🧠 「我這半年做到了___，值得被肯定！」
+DESCRIPTION:【11/23-11/27 本週主題：最終衝刺】\n🏠 家庭：舉辦家庭慶祝派對！｜孩子成長紀錄冊\n🌱 英文：六個月英文最終評估\n🌱 籃球：最終慶祝球賽！\n💼 ERP：完成全年導入成果報告\n💼 AI：AI使用手冊2.0最終版\n💼 外銷：完成2027外銷策略報告\n💪 年底體態最終評估，犒賞自己！\n🧠 「我這半年做到了___，值得被肯定！」
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
@@ -771,14 +784,14 @@ END:VEVENT
 BEGIN:VEVENT
 UID:week25-goals-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;VALUE=DATE:20261214
-DTEND;VALUE=DATE:20261215
-SUMMARY:📅 第25週｜🏆 六個月總回顧
-DESCRIPTION:【12/14-12/20 本週：大結局！】\n🏠 家庭：親子時光六個月回顧\n🌱 英文：填寫英文成長對比表（7月vs12月）\n🌱 籃球：籃球六個月進步曲線整理\n💼 填寫「六個月全方位成果報告」\n💪 體態六個月完整數據回顧\n🧠 記錄這半年3個最感動的瞬間\n🎯 寫下2027年三大目標\n🎉 你做到了！好好慶祝這半年！
+DTSTART;VALUE=DATE:20261130
+DTEND;VALUE=DATE:20261201
+SUMMARY:📅 第25週｜🏆 準備六個月總回顧
+DESCRIPTION:【11/30-12/4 本週：準備大結局！】\n🏠 家庭：親子時光六個月回顧\n🌱 英文：填寫英文成長對比表（6月vs12月）\n🌱 籃球：籃球六個月進步曲線整理\n💼 填寫「六個月全方位成果報告」草稿\n💪 體態六個月完整數據回顧\n🧠 記錄這半年3個最感動的瞬間\n🎯 寫下2027年三大目標\n🎉 12/18 六個月總回顧，準備好了嗎！
 BEGIN:VALARM
 TRIGGER:PT8H
 ACTION:DISPLAY
-DESCRIPTION:📅 第25週！六個月總回顧週！恭喜你堅持到最後！
+DESCRIPTION:📅 第25週！準備六個月總回顧！12/18見！
 END:VALARM
 END:VEVENT
 
