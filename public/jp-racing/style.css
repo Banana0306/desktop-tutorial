@@ -1,22 +1,39 @@
 /* =============================================
-   Variables — JP Racing 金黃 × 深海軍藍
+   Variables — JP Racing 寶藍 × 金黃 × 深黑
    ============================================= */
 :root {
-  --bg-primary:    #0a0d1a;
-  --bg-secondary:  #0f1428;
-  --bg-nav:        #080c1c;
-  --bg-card:       #141b35;
-  --color-accent:  #f5c300;   /* JP Racing 金黃 */
-  --color-accent2: #d4a800;   /* 深金 */
-  --color-accent3: #fff0a0;   /* 淺金 hover */
-  --color-border:  #1e2d5a;
+  /* Backgrounds — 深黑底，呼應 Logo 背景 */
+  --bg-primary:    #0a0b12;
+  --bg-secondary:  #0e1020;
+  --bg-nav:        #07080f;
+  --bg-card:       #111428;
+
+  /* JP Racing 品牌色 */
+  --color-blue:        #1e3faa;   /* Logo 寶藍 */
+  --color-blue-light:  #2d55d4;   /* 亮藍 hover */
+  --color-blue-muted:  #162d80;   /* 深藍 */
+  --color-yellow:      #f5c300;   /* Logo 金黃 */
+  --color-yellow-light:#ffd740;   /* 亮金 hover */
+  --color-yellow-dim:  rgba(245,195,0,0.15);
+
+  /* 主要強調 = 金黃（CTA、重點） */
+  --color-accent:  var(--color-yellow);
+  --color-accent2: var(--color-yellow-light);
+  --color-accent3: #fff5b0;
+
+  /* 邊框 — 帶藍色調 */
+  --color-border:       #1a2550;
+  --color-border-blue:  rgba(30,63,170,0.5);
+  --color-border-yellow:rgba(245,195,0,0.3);
+
   --text-primary:  #ffffff;
-  --text-secondary:#c0c8d8;
-  --text-muted:    #6a7a9a;
-  --font-main:     'Segoe UI','PingFang TC','Noto Sans TC',sans-serif;
-  --nav-height:    68px;
-  --radius:        10px;
-  --transition:    0.3s ease;
+  --text-secondary:#b8c4e0;
+  --text-muted:    #5a6a90;
+
+  --font-main:   'Segoe UI','PingFang TC','Noto Sans TC',sans-serif;
+  --nav-height:  68px;
+  --radius:      10px;
+  --transition:  0.3s ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,9 +66,9 @@ ul { list-style: none; }
   transition: background var(--transition), box-shadow var(--transition);
 }
 .navbar.scrolled {
-  background: rgba(8,12,28,0.98);
-  box-shadow: 0 2px 24px rgba(0,0,0,0.7);
-  border-bottom-color: rgba(245,195,0,0.3);
+  background: rgba(7,8,15,0.98);
+  box-shadow: 0 2px 28px rgba(0,0,0,0.8), 0 1px 0 rgba(30,63,170,0.4);
+  border-bottom-color: var(--color-border-blue);
 }
 .nav-container {
   max-width: 1180px; margin: 0 auto; padding: 0 24px;
@@ -94,8 +111,8 @@ ul { list-style: none; }
   width: 0; height: 2px; background: var(--color-accent);
   transition: width var(--transition);
 }
-.nav-links a:hover { color: var(--color-accent); }
-.nav-links a:hover::after { width: 100%; }
+.nav-links a:hover { color: var(--color-yellow); }
+.nav-links a:hover::after { width: 100%; background: var(--color-yellow); }
 
 .hamburger {
   display: none; flex-direction: column; justify-content: center;
@@ -121,30 +138,41 @@ ul { list-style: none; }
   border: 2px solid transparent; transition: all var(--transition);
   letter-spacing: 0.04em;
 }
-.btn-primary { background: var(--color-accent); color: #0a0d1a; border-color: var(--color-accent); }
-.btn-primary:hover {
-  background: var(--color-accent3); border-color: var(--color-accent3);
-  transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,195,0,0.4);
+/* 主要 CTA — 金黃底深字（最高視覺重量） */
+.btn-primary {
+  background: var(--color-yellow); color: #07080f;
+  border-color: var(--color-yellow);
 }
-.btn-outline { background: transparent; color: var(--text-primary); border-color: rgba(245,195,0,0.4); }
-.btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); transform: translateY(-2px); }
+.btn-primary:hover {
+  background: var(--color-yellow-light); border-color: var(--color-yellow-light);
+  transform: translateY(-2px); box-shadow: 0 6px 28px rgba(245,195,0,0.45);
+}
+/* 次要按鈕 — 藍色外框 */
+.btn-outline {
+  background: transparent; color: var(--text-primary);
+  border-color: var(--color-blue);
+}
+.btn-outline:hover {
+  background: var(--color-blue); color: #fff;
+  transform: translateY(-2px); box-shadow: 0 6px 24px rgba(30,63,170,0.4);
+}
 .btn-full { width: 100%; }
 
 .btn-primary-sm {
   display: inline-block; padding: 8px 20px; border-radius: 5px;
   font-size: 0.85rem; font-weight: 700;
-  background: var(--color-accent); color: #0a0d1a;
-  border: 2px solid var(--color-accent); cursor: pointer; transition: all var(--transition);
+  background: var(--color-yellow); color: #07080f;
+  border: 2px solid var(--color-yellow); cursor: pointer; transition: all var(--transition);
 }
-.btn-primary-sm:hover { background: var(--color-accent3); border-color: var(--color-accent3); }
+.btn-primary-sm:hover { background: var(--color-yellow-light); border-color: var(--color-yellow-light); }
 
 .btn-outline-sm {
   display: inline-block; padding: 8px 20px; border-radius: 5px;
   font-size: 0.85rem; font-weight: 600;
-  background: transparent; color: var(--text-secondary);
-  border: 2px solid var(--color-border); cursor: pointer; transition: all var(--transition);
+  background: transparent; color: var(--color-blue-light);
+  border: 2px solid var(--color-blue); cursor: pointer; transition: all var(--transition);
 }
-.btn-outline-sm:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.btn-outline-sm:hover { background: var(--color-blue); color: #fff; }
 
 /* =============================================
    Hero
@@ -159,10 +187,16 @@ ul { list-style: none; }
 .hero-bg {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 10%, rgba(245,195,0,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(15,20,40,0.9) 0%, transparent 70%),
-    linear-gradient(160deg, #0d1228 0%, #0a0d1a 60%, #080c1c 100%);
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(30,63,170,0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 50% 30%, rgba(245,195,0,0.07) 0%, transparent 60%),
+    linear-gradient(160deg, #0b0d1c 0%, #0a0b12 55%, #07080f 100%);
   z-index: 0;
+}
+.hero-bg::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 70px, rgba(30,63,170,0.07) 70px, rgba(30,63,170,0.07) 71px),
+    repeating-linear-gradient(90deg, transparent, transparent 70px, rgba(30,63,170,0.07) 70px, rgba(30,63,170,0.07) 71px);
 }
 .hero-bg::before {
   content: ''; position: absolute; inset: 0;
@@ -209,7 +243,7 @@ ul { list-style: none; }
 }
 .scroll-arrow {
   width: 16px; height: 16px;
-  border-right: 2px solid var(--color-accent); border-bottom: 2px solid var(--color-accent);
+  border-right: 2px solid var(--color-yellow); border-bottom: 2px solid var(--color-yellow);
   transform: rotate(45deg); animation: bounceDown 1.6s infinite;
 }
 @keyframes bounceDown {
@@ -224,8 +258,9 @@ ul { list-style: none; }
 .section-header { text-align: center; margin-bottom: 60px; }
 .section-tag {
   display: inline-block; font-size: 0.72rem; font-weight: 700;
-  letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-accent);
-  border: 1px solid var(--color-accent); border-radius: 20px; padding: 3px 14px; margin-bottom: 14px;
+  letter-spacing: 0.25em; text-transform: uppercase; color: var(--color-blue-light);
+  border: 1px solid var(--color-blue); border-radius: 20px; padding: 3px 14px; margin-bottom: 14px;
+  background: rgba(30,63,170,0.1);
 }
 .section-title {
   font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800;
@@ -250,8 +285,8 @@ ul { list-style: none; }
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
 .feature-card:hover {
-  transform: translateY(-6px); border-color: var(--color-accent);
-  box-shadow: 0 8px 30px rgba(245,195,0,0.15);
+  transform: translateY(-6px); border-color: var(--color-blue);
+  box-shadow: 0 8px 30px rgba(30,63,170,0.25);
 }
 .feature-icon { font-size: 2.2rem; margin-bottom: 14px; }
 .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
@@ -284,7 +319,11 @@ ul { list-style: none; }
   position: relative; transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
   display: flex; flex-direction: column; gap: 12px;
 }
-.product-card:hover { transform: translateY(-5px); border-color: rgba(245,195,0,0.4); box-shadow: 0 10px 36px rgba(245,195,0,0.1); }
+.product-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-blue);
+  box-shadow: 0 10px 36px rgba(30,63,170,0.22);
+}
 
 /* Full-width cards */
 .product-card--brake,
@@ -292,22 +331,29 @@ ul { list-style: none; }
 .product-card--oil,
 .product-card--brembo { grid-column: 1 / -1; }
 
-/* Tire card accent */
-.product-card--tire { border-color: var(--color-accent); box-shadow: 0 0 0 1px var(--color-accent), 0 8px 32px rgba(245,195,0,0.12); }
-.product-card--tire:hover { border-color: var(--color-accent3); box-shadow: 0 0 0 1px var(--color-accent3), 0 12px 40px rgba(245,195,0,0.2); }
+/* Tire — 金黃強調（熱銷主力） */
+.product-card--tire {
+  border-color: var(--color-yellow);
+  box-shadow: 0 0 0 1px var(--color-yellow), 0 8px 32px rgba(245,195,0,0.1);
+}
+.product-card--tire:hover {
+  border-color: var(--color-yellow-light);
+  box-shadow: 0 0 0 1px var(--color-yellow-light), 0 12px 40px rgba(245,195,0,0.18);
+}
 
-/* Brembo card — keeps red brand identity */
+/* Brembo — 保留紅色品牌識別 */
 .product-card--brembo { border-color: #cc0000; box-shadow: 0 0 0 1px #cc0000, 0 8px 32px rgba(204,0,0,0.15); }
 .product-card--brembo:hover { border-color: #ff2222; box-shadow: 0 0 0 1px #ff2222, 0 12px 40px rgba(204,0,0,0.22); }
 
+/* Badges */
 .badge {
   position: absolute; top: 16px; right: 16px;
-  background: var(--color-accent); color: #0a0d1a;
+  background: var(--color-yellow); color: #07080f;
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
   padding: 3px 10px; border-radius: 20px;
 }
 .badge--inline {
-  display: inline-block; background: var(--color-accent); color: #0a0d1a;
+  display: inline-block; background: var(--color-yellow); color: #07080f;
   font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em;
   padding: 3px 12px; border-radius: 20px; white-space: nowrap;
 }
@@ -323,7 +369,7 @@ ul { list-style: none; }
 
 .product-list { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
 .product-list li { font-size: 0.85rem; color: var(--text-muted); padding-left: 16px; position: relative; }
-.product-list li::before { content: '›'; position: absolute; left: 0; color: var(--color-accent); font-weight: 700; }
+.product-list li::before { content: '›'; position: absolute; left: 0; color: var(--color-yellow); font-weight: 700; }
 
 /* Product image wrap */
 .product-img-wrap {
@@ -354,10 +400,10 @@ ul { list-style: none; }
   border-radius: 6px; padding: 5px 14px; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
 }
 .tire-own {
-  background: rgba(245,195,0,0.07); border: 1px dashed rgba(245,195,0,0.35);
+  background: rgba(30,63,170,0.08); border: 1px dashed rgba(30,63,170,0.4);
   border-radius: 8px; padding: 12px 16px; margin: 4px 0;
 }
-.tire-own-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent); display: block; margin-bottom: 4px; }
+.tire-own-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-blue-light); display: block; margin-bottom: 4px; }
 .tire-own p { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
 .tire-sizes { font-size: 0.78rem !important; font-weight: 400 !important; color: var(--text-muted) !important; margin-top: 4px; }
 
@@ -381,7 +427,7 @@ ul { list-style: none; }
   transition: border-color var(--transition);
 }
 .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-muted); }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--color-accent); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--color-blue-light); box-shadow: 0 0 0 3px rgba(30,63,170,0.2); }
 .form-group select option { background: var(--bg-secondary); }
 .form-group textarea { resize: vertical; min-height: 110px; }
 .field-error { font-size: 0.78rem; color: #ff6b6b; min-height: 1em; }
@@ -410,7 +456,7 @@ ul { list-style: none; }
 .footer-company { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.05em; }
 .footer-links { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
 .footer-links a { font-size: 0.85rem; color: var(--text-muted); transition: color var(--transition); }
-.footer-links a:hover { color: var(--color-accent); }
+.footer-links a:hover { color: var(--color-yellow); }
 .footer-copy { font-size: 0.78rem; color: var(--text-muted); }
 
 /* =============================================
