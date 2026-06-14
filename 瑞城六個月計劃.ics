@@ -63,28 +63,73 @@ END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:exercise-mwf-2026@ruicheng
+UID:sport-mon-retrain-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T190000
-DTEND;TZID=Asia/Taipei:20260701T200000
-SUMMARY:💪🌱 運動 / 籃球練習（60分鐘）
-DESCRIPTION:60 分鐘運動（週一、三、五）\n18:00 結束客戶拜訪 → 回家換裝 → 19:00 出發\n• 籃球技術訓練（BEEF投籃法）\n• 或重訓：深蹲、伏地挺身、棒式\n• 或慢跑 / HIIT\n體態 + 籃球技術雙重提升！
-RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;UNTIL=20261231T155959Z
+DTSTART;TZID=Asia/Taipei:20260706T210000
+DTEND;TZID=Asia/Taipei:20260706T220000
+SUMMARY:💪 重訓課｜北投運動中心
+DESCRIPTION:週一 21:00-22:00 重訓課\n📍 地點：北投運動中心\n🎯 本週訓練重點：\n• 深蹲、硬舉、臥推等複合動作\n• 記錄每次的重量與組數（追蹤進步）\n⏰ 20:40 出發，22:15 回到家\n💡 回家後記得寫睡前日記再睡覺
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
 BEGIN:VALARM
-TRIGGER:-PT30M
+TRIGGER:-PT20M
 ACTION:DISPLAY
-DESCRIPTION:💪 30分鐘後：換裝，準備出發運動！
+DESCRIPTION:💪 20分鐘後出發！週一重訓課：北投運動中心
 END:VALARM
 END:VEVENT
 
 BEGIN:VEVENT
-UID:family-time-weekday-2026@ruicheng
+UID:sport-tue-basketball-2026@ruicheng
 DTSTAMP:20260614T000000Z
-DTSTART;TZID=Asia/Taipei:20260701T203000
-DTEND;TZID=Asia/Taipei:20260701T213000
-SUMMARY:🏠 家人陪伴時光（60分鐘）
-DESCRIPTION:不帶手機，專心陪伴家人 60 分鐘\n【週一三五】運動結束後洗澡，約 20:30 陪伴\n【週二四】18:30 回家用餐後即可陪伴\n• 和孩子說故事、玩遊戲、問他今天如何\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
-RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
+DTSTART;TZID=Asia/Taipei:20260707T200000
+DTEND;TZID=Asia/Taipei:20260707T220000
+SUMMARY:🏀 5對5籃球｜北投運動中心
+DESCRIPTION:週二 20:00-22:00 室內5對5籃球\n📍 地點：北投運動中心\n🎯 本週技術重點（從計劃中選一個）：\n• 投籃：catch and shoot 節奏\n• 防守：滑步與 boxing out\n• 進攻：v cut 跑位和擋拆應用\n⏰ 19:40 出發，22:15 回到家\n🌱 英文加分：下次試著和隊友用英文講一個戰術
+RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT20M
+ACTION:DISPLAY
+DESCRIPTION:🏀 20分鐘後出發！週二5對5籃球：北投運動中心
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-mon-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260706T190000
+DTEND;TZID=Asia/Taipei:20260706T210000
+SUMMARY:🏠 家人時光（週一，21:00前出門重訓）
+DESCRIPTION:週一 19:00-21:00 家人陪伴\n18:30 回家用餐 → 19:00 陪孩子和另一半\n21:00 出發去北投運動中心重訓課\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 21:00 要出門，記得提前收心
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🏠 開始家人時光！記得21:00要出發去重訓
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-tue-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260707T183000
+DTEND;TZID=Asia/Taipei:20260707T200000
+SUMMARY:🏠 家人時光（週二，20:00前出門打球）
+DESCRIPTION:週二 18:30-20:00 家人陪伴\n18:30 回家用餐 → 陪孩子和另一半\n20:00 出發去北投運動中心打5對5籃球\n• 問孩子今天最開心的事\n• 陪孩子讀書或玩遊戲\n• 和另一半分享今天的一件事\n⏰ 19:40 要出門，記得提前收心
+RRULE:FREQ=WEEKLY;BYDAY=TU;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🏠 開始家人時光！記得19:40要出發去打球
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:family-time-wthf-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T193000
+DTEND;TZID=Asia/Taipei:20260701T210000
+SUMMARY:🏠 家人陪伴時光（週三四五）
+DESCRIPTION:週三、四、五 19:30-21:00 家人陪伴\n18:30 回家用餐 → 19:30 開始陪伴\n不帶手機，專心陪家人 90 分鐘\n• 問孩子今天最開心和最不開心的事\n• 睡前故事 / 聊天 / 一起做活動\n• 和另一半聊聊彼此的狀態\n手機放一邊，孩子需要的是你真正在場
+RRULE:FREQ=WEEKLY;BYDAY=WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT30M
 ACTION:DISPLAY
@@ -194,6 +239,36 @@ BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
 DESCRIPTION:📋 每週回顧時間到！
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:sport-sat-retrain-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260704T100000
+DTEND;TZID=Asia/Taipei:20260704T113000
+SUMMARY:💪 重訓自主訓練｜北投運動中心
+DESCRIPTION:週六 10:00-11:30 重訓自主訓練\n📍 地點：北投運動中心\n🎯 自主訓練計劃（依週目標調整）：\n• 胸：臥推 4x8、飛鳥 3x12\n• 背：引體向上 4x8、划船 3x12\n• 腿：深蹲 4x8、腿推 3x12\n📝 記錄訓練數據，每月追蹤進步\n✅ 訓練後返家，接續家庭日下午活動
+RRULE:FREQ=WEEKLY;BYDAY=SA;UNTIL=20261227T155959Z
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:💪 30分鐘後出發！週六重訓：北投運動中心
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:sport-sun-basketball-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260705T090000
+DTEND;TZID=Asia/Taipei:20260705T110000
+SUMMARY:🏀 3對3鬥牛籃球｜洲美橋下籃球場
+DESCRIPTION:週日 09:00-11:00 3對3鬥牛籃球\n📍 地點：洲美橋下籃球場（戶外）\n🎯 本週技術重點（輪流練）：\n• 個人進攻套路（你專屬的 2-3 個動作）\n• 弱手上籃（每次至少練 5 顆）\n• 防守積極性（每場搶 X 個籃板目標）\n💡 3對3 = 最多球觸球機會，是進步最快的模式\n✅ 11:00 結束 → 回家接續家庭日活動
+RRULE:FREQ=WEEKLY;BYDAY=SU;UNTIL=20261228T155959Z
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:🏀 30分鐘後出發！週日3對3：洲美橋下籃球場
 END:VALARM
 END:VEVENT
 
