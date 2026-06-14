@@ -203,12 +203,12 @@ DTSTAMP:20260614T000000Z
 DTSTART;TZID=Asia/Taipei:20260701T120000
 DTEND;TZID=Asia/Taipei:20260701T123000
 SUMMARY:🍱 午餐
-DESCRIPTION:每日 12:00-12:30 午餐\n🎧 邊吃邊聽英文Podcast\n→ Business English Pod\n→ BBC Global News
+DESCRIPTION:每日 12:00-12:30 午餐\n🎧 邊吃邊聽英文Podcast\n→ Business English Pod\n→ BBC Global News\n吃完就出發健走 15 分鐘！
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:🍱 午餐時間！記得開英文Podcast
+DESCRIPTION:🍱 午餐時間！記得開英文Podcast，吃完去健走
 END:VALARM
 END:VEVENT
 
@@ -216,14 +216,44 @@ BEGIN:VEVENT
 UID:walk-lunch-daily-2026@ruicheng
 DTSTAMP:20260614T000000Z
 DTSTART;TZID=Asia/Taipei:20260701T123000
-DTEND;TZID=Asia/Taipei:20260701T130000
-SUMMARY:🚶 飯後健走（30分鐘／累積步數）
-DESCRIPTION:每日 12:30-13:00 飯後健走\n🎯 目標：一次走 3,000-4,000 步\n🎧 同時聽英文Podcast → 步數 + 英文雙收！\n📍 路線選擇：\n→ 公司附近繞一圈\n→ 附近公園或商業街\n→ 跑業務空檔時在客戶附近走走\n💡 萬步法則：午餐走30分鐘 ≈ 3,500步\n下午跑業務 ≈ 3,000步\n晚上再補 3,500步 → 輕鬆達標！
+DTEND;TZID=Asia/Taipei:20260701T124500
+SUMMARY:🚶 午餐後健走 15 分鐘
+DESCRIPTION:每日 12:30-12:45 飯後健走\n🎯 約 1,500 步\n🎧 繼續聽英文Podcast → 步數 + 英文雙收！\n📍 就近繞一圈即可，不需要走遠\n習慣養成：每餐後 15 分鐘，一天三次，共 4,500 步！
 RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:🚶 飯後健走時間！邊走邊聽英文，一石二鳥
+DESCRIPTION:🚶 飯後健走！出門走 15 分鐘（約1,500步）
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:walk-breakfast-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T074500
+DTEND;TZID=Asia/Taipei:20260701T080000
+SUMMARY:🚶 早餐後健走 15 分鐘
+DESCRIPTION:早餐後健走 15 分鐘（07:45-08:00）\n🎯 約 1,500 步\n📍 出門前在社區或附近走一圈\n💡 飯後輕度步行有助消化，也是一天的好開始\n🧠 走路時可以繼續背英文單字（Anki）\n一天三餐後各走15分鐘 → 合計 4,500 步！
+RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🚶 早餐後健走 15 分鐘！出門走一圈再上班
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:walk-dinner-daily-2026@ruicheng
+DTSTAMP:20260614T000000Z
+DTSTART;TZID=Asia/Taipei:20260701T190000
+DTEND;TZID=Asia/Taipei:20260701T191500
+SUMMARY:🚶 晚餐後健走 15 分鐘
+DESCRIPTION:晚餐後健走 15 分鐘（19:00-19:15）\n🎯 約 1,500 步\n📍 帶著孩子或另一半一起走 → 健走 + 親子時光！\n💡 晚餐後步行可以幫助穩定血糖、促進消化\n🏠 邊走邊聊天，比坐在客廳更有品質的家人時間\n【週一】19:00 家人時光，可以一起出門走走\n【週二】18:30 家人時光，可以一起出門走走\n【週三四五】19:30 前可出門走一圈
+RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
+BEGIN:VALARM
+TRIGGER:-PT0M
+ACTION:DISPLAY
+DESCRIPTION:🚶 晚餐後健走！帶家人一起出門走 15 分鐘
 END:VALARM
 END:VEVENT
 
@@ -233,12 +263,12 @@ DTSTAMP:20260614T000000Z
 DTSTART;TZID=Asia/Taipei:20260701T213000
 DTEND;TZID=Asia/Taipei:20260701T213500
 SUMMARY:👟 今天走到一萬步了嗎？
-DESCRIPTION:每日 21:30 步數確認（30秒）\n→ 開啟 iPhone「健康」App 查看步數\n✅ ≥ 10,000 步：達標！明天繼續\n⚠️  7,000-9,999步：出門快走 15 分鐘（約 1,500-2,000步）\n❌  < 7,000步：快走 20-30 分鐘補足\n\n💡 各日預估步數：\n週一（重訓）：約 7,000-8,000 → 補 2,000 步\n週二（籃球）：約 10,000+ → 通常達標\n週三四五（跑業務）：午餐走 + 拜訪約 8,000 → 補 2,000\n週六（重訓）：約 8,000 → 補 2,000\n週日（3對3）：約 10,000+ → 通常達標
+DESCRIPTION:每日 21:30 步數確認（30秒）\n→ 開啟 iPhone「健康」App 查看步數\n\n三餐後各走15分鐘 ≈ 4,500步\n日常活動（上下班/跑業務）≈ 3,000-4,000步\n➡️ 合計接近 8,000-9,000步，再稍微補就達標！\n\n✅ ≥ 10,000步：達標！打個勾繼續\n⚠️  8,000-9,999步：出門快走 10 分鐘補足\n❌  < 8,000步：快走 20 分鐘，或明天加強\n\n週一（重訓+三餐走）：預估 9,000+ → 幾乎達標\n週二（籃球+三餐走）：預估 12,000+ → 輕鬆達標\n週三四五（業務+三餐走）：預估 8,500+ → 接近達標\n週六（重訓+三餐走）：預估 9,000+ → 幾乎達標\n週日（3對3+三餐走）：預估 12,000+ → 輕鬆達標
 RRULE:FREQ=DAILY;UNTIL=20261231T155959Z
 BEGIN:VALARM
 TRIGGER:-PT0M
 ACTION:DISPLAY
-DESCRIPTION:👟 查一下今天的步數！距離一萬步還差多少？
+DESCRIPTION:👟 查一下今天的步數！三餐後都走了嗎？
 END:VALARM
 END:VEVENT
 
