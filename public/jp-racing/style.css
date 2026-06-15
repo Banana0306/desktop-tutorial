@@ -490,3 +490,17 @@ ul { list-style: none; }
   .oil-grid { grid-template-columns: 1fr; }
   .tire-brands { gap: 6px; }
 }
+
+/* Language switcher */
+.nav-lang {
+  background: rgba(245,195,0,0.15);
+  border: 1px solid #f5c300;
+  border-radius: 4px;
+  padding: 3px 10px !important;
+  font-weight: 700;
+  color: #f5c300 !important;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  transition: background 0.2s;
+}
+.nav-lang:hover { background: #f5c300 !important; color: #0a0b12 !important; }
