@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Pages (with auto-enable)
+      - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -38,3 +38,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+# repo is now public — deploy triggered
