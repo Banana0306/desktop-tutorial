@@ -5,6 +5,10 @@ const morgan = require('morgan');
 const { testConnection } = require('./db/index');
 
 const authRouter            = require('./api/auth');
+const productsRouter        = require('./api/products');
+const customersRouter       = require('./api/customers');
+const suppliersRouter       = require('./api/suppliers');
+const warehousesRouter      = require('./api/warehouses');
 const purchaseOrdersRouter  = require('./api/purchase-orders');
 const goodsReceiptsRouter   = require('./api/goods-receipts');
 const purchaseReturnsRouter = require('./api/purchase-returns');
@@ -42,6 +46,10 @@ app.get('/api/health', async (req, res) => {
 
 // Routes
 app.use('/api/auth',             authRouter);
+app.use('/api/products',         productsRouter);
+app.use('/api/customers',        customersRouter);
+app.use('/api/suppliers',        suppliersRouter);
+app.use('/api/warehouses',       warehousesRouter);
 app.use('/api/purchase-orders',  purchaseOrdersRouter);
 app.use('/api/goods-receipts',   goodsReceiptsRouter);
 app.use('/api/purchase-returns', purchaseReturnsRouter);

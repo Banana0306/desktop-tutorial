@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 
-const TIERS = ['regular', 'silver', 'gold', 'platinum'];
-const TIER_LABELS: Record<string, string> = { regular: '一般', silver: '銀', gold: '金', platinum: '白金' };
-const TIER_BADGE: Record<string, string> = { regular: 'badge-gray', silver: 'badge-blue', gold: 'badge-yellow', platinum: 'badge-purple' };
+const TIERS = ['retail', 'dealer', 'distributor', 'key_account'];
+const TIER_LABELS: Record<string, string> = { retail: '零售', dealer: '經銷', distributor: '批發', key_account: '重點客戶' };
+const TIER_BADGE: Record<string, string> = { retail: 'badge-gray', dealer: 'badge-blue', distributor: 'badge-yellow', key_account: 'badge-purple' };
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -13,7 +13,7 @@ export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [form, setForm] = useState({ code: '', name: '', contact_name: '', phone: '', email: '', tier: 'regular', credit_limit: '0', payment_terms: '30', currency_code: 'TWD' });
+  const [form, setForm] = useState({ code: '', name: '', contact_name: '', phone: '', email: '', tier: 'retail', credit_limit: '0', payment_terms: '30', currency_code: 'TWD' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -29,7 +29,7 @@ export default function CustomersPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ code: '', name: '', contact_name: '', phone: '', email: '', tier: 'regular', credit_limit: '0', payment_terms: '30', currency_code: 'TWD' });
+    setForm({ code: '', name: '', contact_name: '', phone: '', email: '', tier: 'retail', credit_limit: '0', payment_terms: '30', currency_code: 'TWD' });
     setError(''); setShowModal(true);
   };
 
