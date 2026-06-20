@@ -59,6 +59,7 @@ body {
 .btn-secondary:hover { background: #dde1ea; }
 
 .result-count { color: #666; font-size: 0.88rem; margin: 0.6rem 0 0; }
+.disclaimer { color: #b9770e; font-size: 0.82rem; margin: 0.3rem 0 0; }
 
 .results-panel { min-height: 200px; }
 

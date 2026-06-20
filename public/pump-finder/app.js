@@ -6,7 +6,6 @@ const state = {
 const els = {
   keyword: document.getElementById('keyword'),
   filterBrand: document.getElementById('filterBrand'),
-  filterConnector: document.getElementById('filterConnector'),
   clearBtn: document.getElementById('clearBtn'),
   results: document.getElementById('results'),
   resultCount: document.getElementById('resultCount'),
@@ -32,11 +31,9 @@ async function init() {
 
   els.keyword.addEventListener('input', render);
   els.filterBrand.addEventListener('change', render);
-  els.filterConnector.addEventListener('change', render);
   els.clearBtn.addEventListener('click', () => {
     els.keyword.value = '';
     els.filterBrand.value = '';
-    els.filterConnector.value = '';
     render();
   });
   els.compareClear.addEventListener('click', () => {
@@ -48,7 +45,6 @@ async function init() {
 
 function populateFilterOptions() {
   const brands = [...new Set(state.pumps.map(p => p.brand))].sort();
-  const connectors = [...new Set(state.pumps.map(p => p.connectorType))].sort();
 
   for (const b of brands) {
     const opt = document.createElement('option');
@@ -56,12 +52,10 @@ function populateFilterOptions() {
     opt.textContent = b;
     els.filterBrand.appendChild(opt);
   }
-  for (const c of connectors) {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c;
-    els.filterConnector.appendChild(opt);
-  }
+}
+
+function fmtPrice(price) {
+  return price == null ? '價格未提供' : `NT$ ${price.toLocaleString()}`;
 }
 
 function matchesKeyword(pump, keyword) {
@@ -76,12 +70,10 @@ function matchesKeyword(pump, keyword) {
 function getFiltered() {
   const keyword = els.keyword.value.trim();
   const brand = els.filterBrand.value;
-  const connector = els.filterConnector.value;
 
   return state.pumps.filter(p =>
     matchesKeyword(p, keyword) &&
-    (!brand || p.brand === brand) &&
-    (!connector || p.connectorType === connector)
+    (!brand || p.brand === brand)
   );
 }
 
@@ -111,8 +103,8 @@ function buildCard(pump) {
       <h3>${pump.name}</h3>
       <span class="oem">${pump.oemCode}</span>
       <span class="models">適用：${(pump.models || []).join('、')}</span>
-      <span class="specs">${pump.brand} · ${pump.displacement} · ${pump.connectorType}</span>
-      <span class="price">NT$ ${pump.price.toLocaleString()}</span>
+      <span class="specs">${pump.brand}</span>
+      <span class="price">${fmtPrice(pump.price)}</span>
       <div class="card-actions">
         <button type="button" data-action="detail">查看詳情</button>
         <button type="button" data-action="compare" class="${inCompare ? 'added' : ''}">
@@ -178,15 +170,8 @@ function openModal(pump) {
     <table>
       <tr><td>適用品牌</td><td>${pump.brand}</td></tr>
       <tr><td>適用車型</td><td>${(pump.models || []).join('、')}</td></tr>
-      <tr><td>年份範圍</td><td>${pump.yearRange}</td></tr>
-      <tr><td>排氣量</td><td>${pump.displacement}</td></tr>
-      <tr><td>電壓</td><td>${pump.voltage}</td></tr>
-      <tr><td>接頭類型</td><td>${pump.connectorType}</td></tr>
-      <tr><td>出油方式</td><td>${pump.outletType}</td></tr>
-      <tr><td>固定方式</td><td>${pump.mountingType}</td></tr>
-      <tr><td>外觀特徵</td><td>${pump.color}</td></tr>
-      <tr><td>參考售價</td><td>NT$ ${pump.price.toLocaleString()}</td></tr>
-      <tr><td>辨識備註</td><td>${pump.notes}</td></tr>
+      <tr><td>參考售價</td><td>${fmtPrice(pump.price)}</td></tr>
+      <tr><td>備註</td><td>${pump.notes || '-'}</td></tr>
     </table>
   `;
   els.detailModalCard.querySelector('.close-btn').addEventListener('click', closeModal);
