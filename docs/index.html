@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>機車汽油幫浦機種分辨系統</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand-icon">⛽</span>
+    <h1>機車汽油幫浦機種分辨系統</h1>
+  </header>
+
+  <main class="layout">
+    <section class="search-panel">
+      <input id="keyword" type="text" placeholder="輸入車型、品牌或 OEM 碼，例如：勁戰、GP125、23100-KZL-900" autocomplete="off">
+
+      <div class="filter-row">
+        <select id="filterBrand">
+          <option value="">全部品牌</option>
+        </select>
+        <button id="clearBtn" class="btn-secondary" type="button">清除條件</button>
+      </div>
+
+      <p id="resultCount" class="result-count"></p>
+      <p class="disclaimer">⚠ 舊汽油（臭油）導致幫浦馬達故障不在保固範圍內，售價僅供參考，實際以最新報價為準。</p>
+    </section>
+
+    <section class="results-panel">
+      <div id="results" class="results-grid"></div>
+      <p id="emptyState" class="empty-state" hidden>查無符合的幫浦，請嘗試其他關鍵字，或直接瀏覽全部品牌比對圖片。</p>
+    </section>
+
+    <aside id="compareTray" class="compare-tray" hidden>
+      <div class="compare-header">
+        <strong>並排比對（<span id="compareCount">0</span>/3）</strong>
+        <button id="compareClear" class="btn-secondary" type="button">清空</button>
+      </div>
+      <div id="compareList" class="compare-list"></div>
+    </aside>
+  </main>
+
+  <div id="detailModal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card" id="detailModalCard"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
