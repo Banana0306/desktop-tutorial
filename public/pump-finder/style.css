@@ -1,0 +1,147 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: #f0f2f5;
+  color: #1a1a2e;
+}
+
+.topbar {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.topbar h1 { font-size: 1.15rem; margin: 0; }
+.brand-icon { font-size: 1.4rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+  padding: 1.2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.search-panel { grid-column: 1 / -1; }
+
+#keyword {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-size: 1.05rem;
+  border: 1px solid #d6dae3;
+  border-radius: 10px;
+}
+#keyword:focus { outline: none; border-color: #5b8dee; }
+
+.filter-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  flex-wrap: wrap;
+}
+.filter-row select {
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #d6dae3;
+  background: #fff;
+}
+.btn-secondary {
+  background: #e8eaf0;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.btn-secondary:hover { background: #dde1ea; }
+
+.result-count { color: #666; font-size: 0.88rem; margin: 0.6rem 0 0; }
+
+.results-panel { min-height: 200px; }
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.pump-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.pump-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+.pump-card img { width: 100%; height: 160px; object-fit: cover; background: #eef0f5; }
+.pump-card .body { padding: 0.8rem 0.9rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.pump-card h3 { font-size: 0.98rem; margin: 0; }
+.pump-card .oem { font-family: monospace; font-size: 0.8rem; color: #5b8dee; }
+.pump-card .models { font-size: 0.82rem; color: #555; }
+.pump-card .specs { font-size: 0.78rem; color: #888; }
+.pump-card .price { font-weight: 700; margin-top: auto; }
+
+.pump-card .card-actions { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+.pump-card .card-actions button {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #d6dae3;
+  background: #f7f8fb;
+  cursor: pointer;
+}
+.pump-card .card-actions button.added { background: #5b8dee; color: #fff; border-color: #5b8dee; }
+
+.empty-state { text-align: center; color: #888; padding: 2rem; }
+
+.compare-tray {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  padding: 0.9rem;
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+.compare-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; font-size: 0.9rem; }
+.compare-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.compare-item { display: flex; gap: 0.5rem; align-items: center; border: 1px solid #eee; border-radius: 8px; padding: 0.4rem; }
+.compare-item img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #eef0f5; }
+.compare-item .name { font-size: 0.82rem; flex: 1; }
+.compare-item button { border: none; background: none; cursor: pointer; color: #c0392b; font-size: 0.9rem; }
+
+.modal { position: fixed; inset: 0; z-index: 50; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+.modal-card {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  max-width: 640px;
+  margin: 4vh auto;
+  padding: 1.5rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-card img { width: 100%; max-height: 300px; object-fit: contain; background: #eef0f5; border-radius: 8px; }
+.modal-card h2 { margin: 0.8rem 0 0.2rem; }
+.modal-card .oem { font-family: monospace; color: #5b8dee; margin-bottom: 0.8rem; display: block; }
+.modal-card table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.modal-card td { padding: 0.4rem 0.2rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.modal-card td:first-child { color: #888; width: 110px; white-space: nowrap; }
+.modal-card .close-btn {
+  position: absolute; top: 0.8rem; right: 0.8rem;
+  border: none; background: #f0f2f5; border-radius: 50%;
+  width: 32px; height: 32px; cursor: pointer; font-size: 1rem;
+}
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .compare-tray { position: static; }
+}
