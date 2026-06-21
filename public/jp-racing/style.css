@@ -504,3 +504,12 @@ ul { list-style: none; }
   transition: background 0.2s;
 }
 .nav-lang:hover { background: #f5c300 !important; color: #0a0b12 !important; }
+
+/* Contact map */
+.contact-map {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.contact-map iframe { display: block; }
