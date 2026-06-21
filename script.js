@@ -60,5 +60,18 @@ form.addEventListener('submit', e => {
   else if (!ci.match(/^[\d\-\+\(\)\s]{7,}$/) && !ci.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
     valid = showError('contact-info','contactError','請輸入有效的電話或 Email 格式') && valid;
   if (!msg)  valid = showError('message','messageError','請輸入詢問內容') && valid;
-  if (valid) { form.style.display = 'none'; formSuccess.style.display = 'block'; }
+  if (!valid) return;
+
+  const isEn = document.documentElement.lang === 'en';
+  const product = document.getElementById('product').value;
+  const productLabel = document.getElementById('product').selectedOptions[0]?.text || '';
+  const subject = isEn ? `Website Inquiry from ${name}` : `官網詢問 - ${name}`;
+  const bodyLines = isEn
+    ? [`Name / Company: ${name}`, `Phone / Email: ${ci}`, `Product: ${productLabel}`, '', msg]
+    : [`姓名 / 公司名稱：${name}`, `電話 / Email：${ci}`, `詢問產品：${productLabel}`, '', msg];
+  const mailto = `mailto:jpmoto2827@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+  window.location.href = mailto;
+
+  form.style.display = 'none';
+  formSuccess.style.display = 'block';
 });
