@@ -39,7 +39,7 @@ body {
 }
 #keyword:focus { outline: none; border-color: #5b8dee; }
 
-.filter-row a.btn-secondary { text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
+.filter-row a.btn-secondary:not([hidden]) { text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
 
 .filter-row {
   display: flex;

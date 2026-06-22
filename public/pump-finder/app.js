@@ -20,6 +20,7 @@ const els = {
   detailModalCard: document.getElementById('detailModalCard'),
   authStatus: document.getElementById('authStatus'),
   editModeBtn: document.getElementById('editModeBtn'),
+  exportBtn: document.getElementById('exportBtn'),
   addBtn: document.getElementById('addBtn'),
   importBtn: document.getElementById('importBtn'),
   importFile: document.getElementById('importFile'),
@@ -68,6 +69,11 @@ async function init() {
 async function checkAuth() {
   try {
     const res = await fetch('/api/me');
+    if (res.status === 404) {
+      // No backend (e.g. static GitHub Pages hosting) — read-only viewer only.
+      els.exportBtn.hidden = true;
+      return;
+    }
     if (res.ok) {
       const data = await res.json();
       state.loggedIn = true;
