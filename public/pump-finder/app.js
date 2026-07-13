@@ -217,9 +217,10 @@ function renderCompareTray() {
 }
 
 function openModal(pump) {
+  const imgSrc = pump.imageUrl || '';
   els.detailModalCard.innerHTML = `
     <button class="close-btn" type="button" aria-label="關閉">✕</button>
-    <img src="${escapeAttr(pump.imageUrl)}" alt="${escapeAttr(pump.name)}">
+    <img src="${escapeAttr(imgSrc)}" alt="${escapeAttr(pump.name)}" class="modal-img">
     <h2>${escapeAttr(pump.name)}</h2>
     <span class="oem">OEM碼：${escapeAttr(pump.oemCode)}</span>
     <table>
@@ -228,8 +229,33 @@ function openModal(pump) {
       <tr><td>參考售價</td><td>${fmtPrice(pump.price)}</td></tr>
       <tr><td>備註</td><td>${escapeAttr(pump.notes || '-')}</td></tr>
     </table>
+    <div class="share-actions">
+      <button class="btn-copy-text" type="button">📋 複製報價文字</button>
+      <a class="btn-download-img" href="${escapeAttr(imgSrc)}" download>⬇️ 下載圖片</a>
+    </div>
+    <p class="share-hint">複製文字後貼到 LINE，再附上下載的圖片一起傳給客戶</p>
   `;
   els.detailModalCard.querySelector('.close-btn').addEventListener('click', closeModal);
+
+  els.detailModalCard.querySelector('.btn-copy-text').addEventListener('click', function () {
+    const priceText = pump.price != null ? `NT$ ${Number(pump.price).toLocaleString()}` : '洽詢';
+    const notesText = pump.notes && pump.notes !== '-' ? `\n備註：${pump.notes}` : '';
+    const text =
+      `【汽油幫浦報價】\n` +
+      `型號：${pump.name}\n` +
+      `OEM碼：${pump.oemCode}\n` +
+      `適用車型：${(pump.models || []).join('、')}\n` +
+      `參考售價：${priceText}` +
+      `${notesText}\n` +
+      `⚠️ 實際售價以最新報價為準`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.textContent = '✅ 已複製！';
+      setTimeout(() => { this.textContent = '📋 複製報價文字'; }, 2000);
+    }).catch(() => {
+      prompt('請手動複製以下文字：', text);
+    });
+  });
+
   els.detailModal.hidden = false;
 }
 

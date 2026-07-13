@@ -171,3 +171,39 @@ body {
   .layout { grid-template-columns: 1fr; }
   .compare-tray { position: static; }
 }
+
+.share-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.btn-copy-text, .btn-download-img {
+  flex: 1;
+  padding: 0.65rem 0.5rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.btn-copy-text {
+  background: #06c755;
+  color: #fff;
+}
+.btn-copy-text:hover { background: #05b34c; }
+.btn-download-img {
+  background: #5b8dee;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-download-img:hover { background: #4a7de0; }
+.share-hint {
+  font-size: 0.75rem;
+  color: #888;
+  text-align: center;
+  margin: 0.4rem 0 0;
+}
