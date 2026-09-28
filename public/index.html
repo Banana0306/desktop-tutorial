@@ -14,8 +14,7 @@
   <!-- 登入 -->
   <section id="view-login" class="login" hidden>
     <h1>瑞城排車台</h1>
-    <p class="hint">輸入 PIN。排車員和司機的 PIN 不同。</p>
-    <label class="field"><span class="lbl">你的名字（選填）</span><input id="l-name" placeholder="例：阿明" style="font-size:15px;letter-spacing:0;text-align:left"></label>
+    <p class="hint">輸入你自己的 PIN。每個人的 PIN 不同，忘記請找老闆重設。</p>
     <label class="field"><span class="lbl">PIN</span><input id="l-pin" type="password" inputmode="numeric" autocomplete="current-password"></label>
     <button class="btn primary big" id="l-go">登入</button>
     <p class="msg err" id="l-msg" role="alert"></p>
@@ -164,9 +163,35 @@
       <p class="msg" id="set-msg" role="status"></p>
     </section>
     <section class="panel" style="max-width:520px;margin-top:14px">
+      <h2>改我的 PIN</h2>
+      <div class="row"><label class="field t"><span class="lbl">新 PIN（4–8 位數字）</span><input id="my-pin" inputmode="numeric"></label><button class="btn" id="my-pin-save" style="align-self:end">更改</button></div>
+      <p class="msg" id="my-pin-msg" role="status"></p>
+    </section>
+    <section class="panel" style="max-width:520px;margin-top:14px">
       <h2>連線狀態</h2>
       <div id="set-status" class="sub"></div>
     </section>
+  </main>
+
+  <!-- 使用者（老闆） -->
+  <main id="view-users" hidden>
+    <section class="panel" style="margin-bottom:14px">
+      <h2>新增使用者</h2>
+      <div class="row">
+        <label class="field t"><span class="lbl">名字</span><input id="u-name" placeholder="例：阿明"></label>
+        <label class="field t"><span class="lbl">PIN（4–8 位數字）</span><input id="u-pin" inputmode="numeric" placeholder="例：246810"></label>
+        <label class="field t"><span class="lbl">角色</span><select id="u-role"><option value="driver">司機</option><option value="dispatch">排車員</option><option value="owner">老闆</option></select></label>
+        <label class="field t"><span class="lbl">預設車輛（司機用）</span><select id="u-veh"><option value="">不指定</option><option value="car">汽車</option><option value="m1">機車 A</option><option value="m2">機車 B</option></select></label>
+      </div>
+      <div class="row"><button class="btn primary" id="u-add">新增</button><p class="msg" id="u-msg" role="status"></p></div>
+      <ul class="rules">
+        <li><b>老闆</b>：全部功能，含使用者管理、刪除客戶檔。</li>
+        <li><b>排車員</b>：拍照排單、排車、客戶與供應商維護、設定車輛；不能管理使用者。</li>
+        <li><b>司機</b>：只看自己的路線、回報送達。</li>
+      </ul>
+    </section>
+    <div class="tablewrap"><table class="data" id="u-table"></table></div>
+    <p class="hint" style="margin-top:8px">改角色、車輛、停用會立刻生效；重設 PIN 填新號碼後按「重設」。停用的人下次操作就會被登出。</p>
   </main>
 
   <!-- 司機 -->

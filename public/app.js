@@ -39,7 +39,7 @@
   $('#l-pin').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
   async function login() {
     const pin = $('#l-pin').value.trim(); if (!pin) return;
-    try { await api('/login', { method: 'POST', body: { pin, name: $('#l-name').value.trim() } }); $('#l-pin').value = ''; await boot(); }
+    try { await api('/login', { method: 'POST', body: { pin } }); $('#l-pin').value = ''; await boot(); }
     catch (e) { $('#l-msg').textContent = e.message; }
   }
   $('#logout').addEventListener('click', async () => { await api('/logout', { method: 'POST' }).catch(() => { }); location.reload(); });
@@ -48,13 +48,14 @@
     let me; try { me = await api('/me'); } catch { showLogin(); return; }
     S.me = me;
     $('#view-login').hidden = true; $('#top').hidden = false;
-    $('#who').textContent = (me.name ? me.name + '・' : '') + (me.role === 'dispatch' ? '排車員' : '司機');
-    const tabs = me.role === 'dispatch' ? [['dispatch', '排車'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']] : [['driver', '我的路線']];
-    $('#tabs').innerHTML = tabs.map(([v, n]) => `<button role="tab" data-view="${v}" aria-selected="${v === (me.role === 'dispatch' ? 'dispatch' : 'driver')}">${n}</button>`).join('');
-    S.view = me.role === 'dispatch' ? 'dispatch' : 'driver';
+    $('#who').textContent = (me.name ? me.name + '・' : '') + (me.roleName || '');
+    const tabs = me.canDispatch ? [['dispatch', '排車'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : []) : [['driver', '我的路線'], ['settings', '設定']];
+    S.view = me.canDispatch ? 'dispatch' : 'driver';
+    if (me.veh && VEH.includes(me.veh)) S.drv = me.veh;
+    $('#tabs').innerHTML = tabs.map(([v, n]) => `<button role="tab" data-view="${v}" aria-selected="${v === S.view}">${n}</button>`).join('');
     $('#date').value = S.date;
     await refresh();
-    if (me.role === 'dispatch' && me.googleKey) GM.load(me.googleKey).then(() => { S.gmapsReady = true; renderBoard(); }).catch(e => setBanner('bad', 'Google 地圖載入失敗：' + e.message + '。請檢查金鑰與網域限制。'));
+    if (me.canDispatch && me.googleKey) GM.load(me.googleKey).then(() => { S.gmapsReady = true; renderBoard(); }).catch(e => setBanner('bad', 'Google 地圖載入失敗：' + e.message + '。請檢查金鑰與網域限制。'));
     if (S.poll) clearInterval(S.poll);
     S.poll = setInterval(() => refresh().catch(() => { }), 30000);
   }
@@ -101,6 +102,7 @@
     else if (S.view === 'customers') { if (S.renderedView !== 'customers') loadCustomers(); }
     else if (S.view === 'suppliers') { if (S.renderedView !== 'suppliers' || !Object.keys(S.sDirty).length) renderSuppliers(); }
     else if (S.view === 'settings') { if (S.renderedView !== 'settings') renderSettings(); }
+    else if (S.view === 'users') { if (S.renderedView !== 'users') loadUsers(); }
     S.renderedView = S.view;
   }
   function setBanner(kind, text, btn) { const b = $('#banner'); b.dataset.extra = JSON.stringify({ kind, text, btn }); renderBanner(); }
@@ -663,6 +665,7 @@
   // ---------- 設定 ----------
   function renderSettings() {
     const f = S.fleet; VEH.forEach(v => { $('#n-' + v).value = f.names[v] || ''; });
+    document.querySelector('#view-settings .panel').hidden = !S.me.canDispatch;
     const per = f.perStop || {}; $('#ps-car').value = per.car ?? 8; $('#ps-moto').value = per.m1 ?? per.moto ?? 5; $('#ps-radius').value = f.motoRadiusKm ?? 10;
     $('#set-status').innerHTML = `<div>Google 地圖金鑰：${S.me.googleKey ? '<span class="geo-ok">已設定</span>' + (S.gmapsReady ? '，已載入' : '，載入中或失敗') : '<span class="geo-no">未設定</span>'}</div>
       <div>照片辨識（Anthropic）：${S.me.ocr ? '<span class="geo-ok">已設定</span>' : '<span class="geo-no">未設定</span>'}</div>
@@ -672,6 +675,51 @@
     const f = S.fleet; VEH.forEach(v => { f.names[v] = $('#n-' + v).value.trim() || KIND[v]; });
     const moto = +$('#ps-moto').value || 5; f.perStop = { car: +$('#ps-car').value || 8, m1: moto, m2: moto }; f.motoRadiusKm = +$('#ps-radius').value || 10;
     try { await api('/settings/fleet', { method: 'PUT', body: f }); flash('#set-msg', '已儲存。'); } catch (e) { flash('#set-msg', e.message, true); }
+  });
+
+  $('#my-pin-save').addEventListener('click', async () => {
+    const pin = $('#my-pin').value.trim();
+    try { await api('/me/pin', { method: 'POST', body: { pin } }); $('#my-pin').value = ''; flash('#my-pin-msg', 'PIN 已更改，下次登入用新的。'); } catch (e) { flash('#my-pin-msg', e.message, true); }
+  });
+
+  // ---------- 使用者（老闆） ----------
+  const ROLE_OPTS = [['owner', '老闆'], ['dispatch', '排車員'], ['driver', '司機']];
+  async function loadUsers() {
+    const users = await api('/users').catch(e => { flash('#u-msg', e.message, true); return []; });
+    $('#u-table').innerHTML = `<thead><tr><th>名字</th><th>角色</th><th>預設車輛</th><th>狀態</th><th>最後登入</th><th>重設 PIN</th><th></th></tr></thead><tbody>${users.map(u => `<tr data-uid="${u.id}">
+      <td><input data-uk="name" value="${esc(u.name)}" style="width:110px">${u.id === S.me.uid ? ' <span class="pill ok">我</span>' : ''}</td>
+      <td><select data-uk="role">${ROLE_OPTS.map(([v, n]) => `<option value="${v}"${u.role === v ? ' selected' : ''}>${n}</option>`).join('')}</select></td>
+      <td><select data-uk="veh"><option value="">不指定</option>${VEH.map(v => `<option value="${v}"${u.veh === v ? ' selected' : ''}>${esc(vName(v))}</option>`).join('')}</select></td>
+      <td><button class="toggle" data-uk="active" aria-pressed="${u.active}">${u.active ? '啟用中' : '已停用'}</button></td>
+      <td class="sub">${u.last_login ? esc(new Date(u.last_login.replace(' ', 'T') + 'Z').toLocaleString('zh-TW', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })) : '—'}</td>
+      <td><div class="row" style="gap:4px;flex-wrap:nowrap"><input data-uk="pin" inputmode="numeric" placeholder="新 PIN" style="width:90px"><button class="btn sm" data-uk="pinsave">重設</button></div></td>
+      <td>${u.id === S.me.uid ? '' : (S.confirmDel === 'user:' + u.id ? `<button class="btn sm urgent" data-uk="del">確定刪除</button>` : `<button class="icon danger" data-uk="del" aria-label="刪除">✕</button>`)}</td></tr>`).join('')}</tbody>`;
+  }
+  async function patchUser(id, body, okMsg) {
+    try { await api('/users', { method: 'PATCH', body: Object.assign({ id }, body) }); if (okMsg) flash('#u-msg', okMsg); await loadUsers(); if (id === S.me.uid) { S.me = await api('/me'); } }
+    catch (e) { flash('#u-msg', e.message, true); await loadUsers(); }
+  }
+  $('#u-table').addEventListener('change', e => {
+    const el = e.target, tr = el.closest('tr'); if (!tr || !el.dataset.uk) return; const id = +tr.dataset.uid;
+    if (el.dataset.uk === 'name') patchUser(id, { name: el.value }, '名字已更新。');
+    if (el.dataset.uk === 'role') patchUser(id, { role: el.value }, '角色已更新。');
+    if (el.dataset.uk === 'veh') patchUser(id, { veh: el.value }, '車輛已更新。');
+  });
+  $('#u-table').addEventListener('click', async e => {
+    const el = e.target.closest('[data-uk]'), tr = e.target.closest('tr'); if (!el || !tr) return; const id = +tr.dataset.uid;
+    if (el.dataset.uk === 'active') patchUser(id, { active: el.getAttribute('aria-pressed') !== 'true' }, '狀態已更新。');
+    if (el.dataset.uk === 'pinsave') { const pin = tr.querySelector('[data-uk=pin]').value.trim(); if (!pin) { flash('#u-msg', '請先填新 PIN。', true); return; } patchUser(id, { pin }, 'PIN 已重設，記得告訴本人。'); }
+    if (el.dataset.uk === 'del') {
+      const k = 'user:' + id;
+      if (S.confirmDel !== k) { S.confirmDel = k; await loadUsers(); setTimeout(() => { if (S.confirmDel === k) { S.confirmDel = null; loadUsers(); } }, 4000); return; }
+      S.confirmDel = null; try { await api('/users', { method: 'DELETE', body: { id } }); flash('#u-msg', '已刪除。'); } catch (err) { flash('#u-msg', err.message, true); } await loadUsers();
+    }
+  });
+  $('#u-add').addEventListener('click', async () => {
+    try {
+      await api('/users', { method: 'POST', body: { name: $('#u-name').value.trim(), pin: $('#u-pin').value.trim(), role: $('#u-role').value, veh: $('#u-veh').value } });
+      ['#u-name', '#u-pin'].forEach(q => $(q).value = ''); flash('#u-msg', '已新增，把 PIN 告訴本人即可登入。'); await loadUsers();
+    } catch (e) { flash('#u-msg', e.message, true); }
   });
 
   // ---------- 司機 ----------

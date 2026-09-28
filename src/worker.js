@@ -31,8 +31,8 @@ async function hmac(secret, data) {
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
   return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=+$/, '');
 }
-async function makeToken(env, role, name) {
-  const body = btoa(unescape(encodeURIComponent(JSON.stringify({ role, name, exp: Math.floor(Date.now() / 1000) + 30 * DAY }))));
+async function makeToken(env, role, name, uid) {
+  const body = btoa(unescape(encodeURIComponent(JSON.stringify({ role, name, uid, exp: Math.floor(Date.now() / 1000) + 30 * DAY }))));
   return body + '.' + await hmac(env.SESSION_SECRET, body);
 }
 async function readSession(req, env) {
@@ -49,30 +49,122 @@ function cookieHeader(token, maxAge) {
   return { 'set-cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}` };
 }
 
+// ---------- 使用者 ----------
+// 角色：owner（老闆，最高權限）> dispatch（排車員）> driver（司機）
+const ROLES = ['owner', 'dispatch', 'driver'];
+const ROLE_NAME = { owner: '老闆', dispatch: '排車員', driver: '司機' };
+let migrated = false;
+async function migrate(env) {
+  if (migrated) return;
+  await env.DB.exec(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, pin_hash TEXT NOT NULL UNIQUE, role TEXT NOT NULL DEFAULT 'driver', veh TEXT DEFAULT '', active INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now')), last_login TEXT DEFAULT '')`);
+  const n = await env.DB.prepare('SELECT COUNT(*) n FROM users').first();
+  if (!n.n) {
+    // 第一次啟用：把原本的兩組 PIN 變成兩個帳號
+    await env.DB.prepare('INSERT INTO users (name, pin_hash, role) VALUES (?,?,?)').bind('老闆', await pinHash(env, env.DISPATCH_PIN), 'owner').run();
+    await env.DB.prepare('INSERT INTO users (name, pin_hash, role) VALUES (?,?,?)').bind('司機', await pinHash(env, env.DRIVER_PIN), 'driver').run();
+  }
+  migrated = true;
+}
+const pinHash = (env, pin) => hmac(env.SESSION_SECRET, 'pin:' + String(pin).trim());
+function validPin(p) { return /^\d{4,8}$/.test(String(p || '').trim()); }
+const userRow = u => ({ id: u.id, name: u.name, role: u.role, roleName: ROLE_NAME[u.role] || u.role, veh: u.veh || '', active: !!u.active, last_login: u.last_login || '', created_at: u.created_at });
+
 // ---------- router ----------
 async function api(req, env, url) {
   if (!env.SESSION_SECRET || !env.DISPATCH_PIN || !env.DRIVER_PIN) throw new HttpError(500, '尚未設定 SESSION_SECRET / DISPATCH_PIN / DRIVER_PIN（見 README）');
   const path = url.pathname.replace(/^\/api/, '');
   const method = req.method;
+  const db = env.DB;
+  await migrate(env);
 
   if (path === '/login' && method === 'POST') {
-    const { pin, name } = await req.json();
-    const role = pin === env.DISPATCH_PIN ? 'dispatch' : pin === env.DRIVER_PIN ? 'driver' : null;
-    if (!role) throw new HttpError(401, 'PIN 不正確');
-    const token = await makeToken(env, role, String(name || '').slice(0, 30));
-    return json({ role }, 200, cookieHeader(token, 30 * DAY));
+    const { pin } = await req.json();
+    if (!validPin(pin)) throw new HttpError(401, 'PIN 不正確');
+    const u = await db.prepare('SELECT * FROM users WHERE pin_hash=?').bind(await pinHash(env, pin)).first();
+    if (!u) throw new HttpError(401, 'PIN 不正確');
+    if (!u.active) throw new HttpError(403, '這個帳號已停用，請找老闆');
+    await db.prepare("UPDATE users SET last_login=datetime('now') WHERE id=?").bind(u.id).run();
+    const token = await makeToken(env, u.role, u.name, u.id);
+    return json({ role: u.role, name: u.name }, 200, cookieHeader(token, 30 * DAY));
   }
   if (path === '/logout' && method === 'POST') return json({ ok: true }, 200, cookieHeader('x', 0));
 
   const s = await readSession(req, env);
   if (!s) throw new HttpError(401, '請先登入');
-  const isDispatch = s.role === 'dispatch';
-  const needDispatch = () => { if (!isDispatch) throw new HttpError(403, '只有排車員可以做這個動作'); };
-  const db = env.DB;
+  // 每次都確認帳號還在、還沒被停用或改角色
+  const me = s.uid ? await db.prepare('SELECT * FROM users WHERE id=?').bind(s.uid).first() : null;
+  if (!me || !me.active) throw new HttpError(401, '請重新登入');
+  s.role = me.role; s.name = me.name;
+  const isOwner = s.role === 'owner';
+  const isDispatch = isOwner || s.role === 'dispatch';
+  const needDispatch = () => { if (!isDispatch) throw new HttpError(403, '只有排車員或老闆可以做這個動作'); };
+  const needOwner = () => { if (!isOwner) throw new HttpError(403, '只有老闆可以做這個動作'); };
+
+  // ----- 使用者管理（老闆） -----
+  if (path === '/users' && method === 'GET') {
+    needOwner();
+    const r = await db.prepare('SELECT * FROM users ORDER BY CASE role WHEN \'owner\' THEN 0 WHEN \'dispatch\' THEN 1 ELSE 2 END, id').all();
+    return json(r.results.map(userRow));
+  }
+  if (path === '/users' && method === 'POST') {
+    needOwner();
+    const p = await req.json();
+    const name = str(p.name); if (!name) bad('請填名字');
+    if (!validPin(p.pin)) bad('PIN 要 4 到 8 位數字');
+    if (!ROLES.includes(p.role)) bad('角色不正確');
+    const h = await pinHash(env, p.pin);
+    if (await db.prepare('SELECT id FROM users WHERE pin_hash=?').bind(h).first()) bad('這組 PIN 已經有人用了，請換一組');
+    const r = await db.prepare('INSERT INTO users (name, pin_hash, role, veh) VALUES (?,?,?,?)').bind(name, h, p.role, VEH.includes(p.veh) ? p.veh : '').run();
+    return json({ ok: true, id: r.meta.last_row_id });
+  }
+  if (path === '/users' && method === 'PATCH') {
+    needOwner();
+    const p = await req.json();
+    const u = await db.prepare('SELECT * FROM users WHERE id=?').bind(+p.id).first();
+    if (!u) bad('找不到使用者');
+    const sets = [], vals = [];
+    if (p.name !== undefined) { const nm = str(p.name); if (!nm) bad('名字不能空白'); sets.push('name=?'); vals.push(nm); }
+    if (p.role !== undefined) {
+      if (!ROLES.includes(p.role)) bad('角色不正確');
+      if (u.id === me.id && p.role !== 'owner') bad('不能把自己降級');
+      sets.push('role=?'); vals.push(p.role);
+    }
+    if (p.veh !== undefined) { sets.push('veh=?'); vals.push(VEH.includes(p.veh) ? p.veh : ''); }
+    if (p.active !== undefined) {
+      if (u.id === me.id && !p.active) bad('不能停用自己');
+      sets.push('active=?'); vals.push(p.active ? 1 : 0);
+    }
+    if (p.pin !== undefined && p.pin !== '') {
+      if (!validPin(p.pin)) bad('PIN 要 4 到 8 位數字');
+      const h = await pinHash(env, p.pin);
+      const dup = await db.prepare('SELECT id FROM users WHERE pin_hash=? AND id<>?').bind(h, u.id).first();
+      if (dup) bad('這組 PIN 已經有人用了，請換一組');
+      sets.push('pin_hash=?'); vals.push(h);
+    }
+    if (!sets.length) return json({ ok: true });
+    await db.prepare(`UPDATE users SET ${sets.join(',')} WHERE id=?`).bind(...vals, u.id).run();
+    return json({ ok: true });
+  }
+  if (path === '/users' && method === 'DELETE') {
+    needOwner();
+    const { id } = await req.json();
+    if (+id === me.id) bad('不能刪除自己');
+    await db.prepare('DELETE FROM users WHERE id=?').bind(+id).run();
+    return json({ ok: true });
+  }
+  // 自己改 PIN（所有人）
+  if (path === '/me/pin' && method === 'POST') {
+    const { pin } = await req.json();
+    if (!validPin(pin)) bad('PIN 要 4 到 8 位數字');
+    const h = await pinHash(env, pin);
+    if (await db.prepare('SELECT id FROM users WHERE pin_hash=? AND id<>?').bind(h, me.id).first()) bad('這組 PIN 已經有人用了，請換一組');
+    await db.prepare('UPDATE users SET pin_hash=? WHERE id=?').bind(h, me.id).run();
+    return json({ ok: true });
+  }
 
   if (path === '/me') {
     return json({
-      role: s.role, name: s.name,
+      role: s.role, name: s.name, uid: me.id, veh: me.veh || '', isOwner, canDispatch: isDispatch, roleName: ROLE_NAME[s.role],
       warehouse: { addr: env.WAREHOUSE_ADDR, lat: +env.WAREHOUSE_LAT, lng: +env.WAREHOUSE_LNG },
       googleKey: isDispatch ? (env.GOOGLE_MAPS_BROWSER_KEY || '') : '',
       ocr: isDispatch && !!env.ANTHROPIC_API_KEY
@@ -201,7 +293,7 @@ async function api(req, env, url) {
     return json({ ok: true, n: stmts.length });
   }
   if (path === '/customers' && method === 'DELETE') {
-    needDispatch();
+    needOwner();
     const { codes } = await req.json();
     await db.batch(codes.map(c => db.prepare('DELETE FROM customers WHERE code=?').bind(normCode(c))));
     return json({ ok: true });
