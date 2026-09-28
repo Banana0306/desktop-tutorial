@@ -85,11 +85,12 @@
           <h2 id="h-auto">排車</h2>
           <label class="field t"><span class="lbl">出車時間</span><input type="time" id="s-start"></label>
           <ul class="rules">
-            <li>大件（輪胎、整箱機油）→ 汽車；離倉超過 <span id="r-radius">10</span> km → 汽車</li>
-            <li>其餘依方位分給兩台機車</li>
+            <li>大件（輪胎、整箱機油）只給汽車；其他站看放哪台車最省時間</li>
+            <li>站會在車與車之間反覆調換，直到三台車都盡早回倉、工作量平均</li>
+            <li>機車盡量不跑超過 <span id="r-radius">10</span> km（會算入成本，但不是硬規定）</li>
             <li>汽車用 Google 汽車路線＋路況，機車用 Google 機車路線</li>
             <li>調貨：供應商取貨站排在該客戶前面，同一台車</li>
-            <li>照營業時間排，快打烊的先送，急件最優先；公休的不排</li>
+            <li>照營業時間排，趕不上打烊會標紅；急件優先；公休的不排</li>
           </ul>
           <button class="btn primary big" id="auto">用 Google 排車</button>
           <p class="msg" id="a-msg" role="status"></p>
