@@ -1,0 +1,21 @@
+name = "ruicheng-dispatch"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ruicheng-dispatch"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+
+[vars]
+# 非機密設定。機密（PIN、API 金鑰）用 `wrangler secret put` 設定，不要寫在這裡。
+WAREHOUSE_ADDR = "新北市板橋區中山路二段光榮巷10號"
+WAREHOUSE_LAT = "25.0092"
+WAREHOUSE_LNG = "121.4712"
+ANTHROPIC_MODEL = "claude-sonnet-4-5"

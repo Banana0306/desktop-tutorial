@@ -1,0 +1,13 @@
+name = "ruicheng-dispatch"
+main = "worker.single.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+[[d1_databases]]
+binding = "DB"
+database_name = "ruicheng-dispatch"
+database_id = "00000000-0000-0000-0000-000000000000"
+[vars]
+WAREHOUSE_ADDR = "新北市板橋區中山路二段光榮巷10號"
+WAREHOUSE_LAT = "25.0092"
+WAREHOUSE_LNG = "121.4712"
+ANTHROPIC_MODEL = "claude-sonnet-4-5"

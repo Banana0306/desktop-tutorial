@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>瑞城排車台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 登入 -->
+  <section id="view-login" class="login" hidden>
+    <h1>瑞城排車台</h1>
+    <p class="hint">輸入 PIN。排車員和司機的 PIN 不同。</p>
+    <label class="field"><span class="lbl">你的名字（選填）</span><input id="l-name" placeholder="例：阿明" style="font-size:15px;letter-spacing:0;text-align:left"></label>
+    <label class="field"><span class="lbl">PIN</span><input id="l-pin" type="password" inputmode="numeric" autocomplete="current-password"></label>
+    <button class="btn primary big" id="l-go">登入</button>
+    <p class="msg err" id="l-msg" role="alert"></p>
+  </section>
+
+  <header class="top" id="top" hidden>
+    <div class="brand"><h1>瑞城排車台</h1><small>板橋倉出車</small></div>
+    <label class="date"><span class="lbl">日期</span><input type="date" id="date"></label>
+    <span class="who" id="who"></span>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <button class="btn sm" id="logout">登出</button>
+  </header>
+
+  <!-- 排車 -->
+  <main id="view-dispatch" hidden>
+    <div class="flow" aria-label="每日配車流程">
+      <span><b>1</b>拍出貨單／取貨單上傳</span>
+      <span><b>2</b>確認客戶、營業時間、調貨</span>
+      <span><b>3</b>按「用 Google 排車」</span>
+      <span><b>4</b>複製路線傳 LINE</span>
+      <span><b>5</b>司機逐站回報</span>
+    </div>
+    <div id="banner"></div>
+    <div class="grid">
+      <aside style="display:grid;gap:14px">
+        <section class="panel photo" aria-labelledby="h-photo">
+          <h2 id="h-photo">拍照排單</h2>
+          <p class="hint">出貨單、手寫單、LINE 截圖都可以，一次最多 8 張。讀到客戶編號會自動帶入客戶檔的地址和營業時間。</p>
+          <label class="drop"><input type="file" id="p-files" accept="image/*" multiple><span id="p-label">點這裡拍照或選照片</span></label>
+          <div class="thumbs" id="p-thumbs"></div>
+          <label class="field"><span class="lbl">補充說明（可空白）</span><input id="p-note" placeholder="例：五洲那張要先去登路普拿 8 條胎"></label>
+          <button class="btn primary big" id="p-go" disabled>讀取照片</button>
+          <p class="msg" id="p-msg" role="status"></p>
+          <div id="p-review"></div>
+        </section>
+
+        <details class="panel">
+          <summary>手動新增一筆</summary>
+          <label class="field"><span class="lbl">客戶編號或店名（自動搜尋客戶檔）</span><input id="f-q" placeholder="FJ5 或 五洲" autocomplete="off"><div id="f-sug"></div></label>
+          <label class="field"><span class="lbl">店名</span><input id="f-shop"></label>
+          <label class="field"><span class="lbl">地址</span><input id="f-addr"></label>
+          <div class="row">
+            <label class="field t"><span class="lbl">開門</span><input type="time" id="f-open"></label>
+            <label class="field t"><span class="lbl">打烊</span><input type="time" id="f-close"></label>
+          </div>
+          <label class="field"><span class="lbl">貨物</span><input id="f-items" placeholder="輪胎×4、機油×6"></label>
+          <div class="row">
+            <label class="check"><input type="checkbox" id="f-bulky">大件（輪胎／整箱）</label>
+            <label class="check"><input type="checkbox" id="f-urgent">急件</label>
+            <label class="check"><input type="checkbox" id="f-pick">先去供應商取貨</label>
+          </div>
+          <div id="f-pickbox" hidden style="display:grid;gap:8px">
+            <label class="field"><span class="lbl">供應商</span><select id="f-sup"></select></label>
+            <label class="field"><span class="lbl">要取的貨</span><input id="f-pitems"></label>
+          </div>
+          <button class="btn primary" id="f-add">加入訂單</button>
+          <p class="msg" id="f-msg" role="status"></p>
+        </details>
+
+        <details class="panel">
+          <summary>貼上 Claude 整理好的 JSON</summary>
+          <p class="hint">把照片傳給 Claude 對話整理時，它會給一段 JSON，貼這裡就能進來。</p>
+          <textarea id="j-text" class="copybox" placeholder='[{"code":"FJ5","shop":"五洲機車行","addr":"…","items":"…","bulky":true}]'></textarea>
+          <button class="btn" id="j-go">匯入</button>
+        </details>
+
+        <section class="panel" aria-labelledby="h-auto">
+          <h2 id="h-auto">排車</h2>
+          <label class="field t"><span class="lbl">出車時間</span><input type="time" id="s-start"></label>
+          <ul class="rules">
+            <li>大件（輪胎、整箱機油）→ 汽車；離倉超過 <span id="r-radius">10</span> km → 汽車</li>
+            <li>其餘依方位分給兩台機車</li>
+            <li>汽車用 Google 汽車路線＋路況，機車用 Google 機車路線</li>
+            <li>調貨：供應商取貨站排在該客戶前面，同一台車</li>
+            <li>照營業時間排，快打烊的先送，急件最優先；公休的不排</li>
+          </ul>
+          <button class="btn primary big" id="auto">用 Google 排車</button>
+          <p class="msg" id="a-msg" role="status"></p>
+          <p class="hint">已送達的站不會重排；今天重排會從司機最後一站和現在時間接著算。</p>
+          <div id="unassigned"></div>
+        </section>
+      </aside>
+      <section class="board" id="board" aria-label="三台車今日路線"></section>
+    </div>
+  </main>
+
+  <!-- 客戶 -->
+  <main id="view-customers" hidden>
+    <div class="toolbar">
+      <div class="kpi" id="c-kpi"></div>
+      <span style="flex:1"></span>
+      <input type="search" id="c-q" placeholder="搜尋編號、店名、地址">
+      <select id="c-mode"><option value="">全部</option><option value="nohours">還沒填營業時間</option><option value="nogeo">還沒有座標</option></select>
+      <button class="btn" id="c-geo">補座標（Google）</button>
+      <button class="btn primary" id="c-save" disabled>儲存修改</button>
+    </div>
+    <details class="panel" id="c-import" style="margin-bottom:14px">
+      <summary>從 ERP 匯入客戶（Excel／CSV）</summary>
+      <p class="hint">從 VMASTER 匯出客戶主檔（至少要有客戶編號、名稱、地址）。同編號會更新，不會重複。營業時間欄位有就一起帶入，沒有的話之後在下面表格補。</p>
+      <input type="file" id="c-file" accept=".xlsx,.xls,.csv">
+      <div id="c-map"></div>
+      <p class="msg" id="c-msg" role="status"></p>
+    </details>
+    <div class="tablewrap"><table class="data" id="c-table"></table></div>
+    <p class="hint" style="margin-top:8px">營業時間直接在表格裡改，公休日點星期即可，改完按「儲存修改」。地址改了要重新補座標。</p>
+  </main>
+
+  <!-- 供應商 -->
+  <main id="view-suppliers" hidden>
+    <div class="toolbar"><div class="kpi" id="s-kpi"></div><span style="flex:1"></span><button class="btn" id="s-geo">補座標（Google）</button><button class="btn primary" id="s-save" disabled>儲存修改</button></div>
+    <details class="panel" style="margin-bottom:14px">
+      <summary>從 Excel／CSV 匯入供應商</summary>
+      <p class="hint">至少要有供應商名稱和地址；電話、開門、打烊、公休、備註有就一起帶入。同名稱會更新，不會重複。</p>
+      <input type="file" id="s-file" accept=".xlsx,.xls,.csv">
+      <div id="s-map"></div>
+      <p class="msg" id="s-imsg" role="status"></p>
+    </details>
+    <section class="panel" style="margin-bottom:14px">
+      <h2>新增供應商（取貨地點）</h2>
+      <div class="row">
+        <label class="field t"><span class="lbl">名稱</span><input id="s-name" placeholder="例：登路普代理"></label>
+        <label class="field" style="flex:3;min-width:240px"><span class="lbl">地址</span><input id="s-addr"></label>
+        <label class="field t"><span class="lbl">電話</span><input id="s-phone"></label>
+        <label class="field t"><span class="lbl">開門</span><input type="time" id="s-open"></label>
+        <label class="field t"><span class="lbl">打烊</span><input type="time" id="s-close"></label>
+      </div>
+      <div class="row"><button class="btn primary" id="s-add">新增</button><p class="msg" id="s-msg" role="status"></p></div>
+      <p class="hint">照片上只寫供應商名字時，會用這裡的地址和時間。</p>
+    </section>
+    <div class="tablewrap"><table class="data" id="s-table"></table></div>
+  </main>
+
+  <!-- 設定 -->
+  <main id="view-settings" hidden>
+    <section class="panel" style="max-width:520px">
+      <h2>車輛與司機</h2>
+      <label class="field"><span class="lbl">汽車司機</span><input id="n-car"></label>
+      <label class="field"><span class="lbl">機車 A 司機</span><input id="n-m1"></label>
+      <label class="field"><span class="lbl">機車 B 司機</span><input id="n-m2"></label>
+      <div class="row">
+        <label class="field t"><span class="lbl">汽車每站停留（分）</span><input type="number" id="ps-car" min="1" max="60"></label>
+        <label class="field t"><span class="lbl">機車每站停留（分）</span><input type="number" id="ps-moto" min="1" max="60"></label>
+        <label class="field t"><span class="lbl">機車最遠（km）</span><input type="number" id="ps-radius" min="1" max="60"></label>
+      </div>
+      <button class="btn primary" id="set-save">儲存</button>
+      <p class="msg" id="set-msg" role="status"></p>
+    </section>
+    <section class="panel" style="max-width:520px;margin-top:14px">
+      <h2>連線狀態</h2>
+      <div id="set-status" class="sub"></div>
+    </section>
+  </main>
+
+  <!-- 司機 -->
+  <main id="view-driver" hidden><div class="drv" id="driver"></div></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="core.js"></script>
+<script src="gmaps.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
