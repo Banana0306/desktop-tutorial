@@ -350,12 +350,15 @@
   }
   // 從客戶檔補資料
   async function enrich(orders) {
-    const codes = orders.map(o => o.code).filter(Boolean), names = orders.filter(o => !o.code && o.shop).map(o => o.shop);
-    if (!codes.length && !names.length) return orders;
-    const found = await api('/customers/lookup', { method: 'POST', body: { codes, names } }).catch(() => ({}));
+    const codes = orders.map(o => o.code).filter(Boolean), names = orders.filter(o => o.shop).map(o => o.shop), phones = orders.map(o => o.phone).filter(Boolean);
+    if (!codes.length && !names.length && !phones.length) return orders;
+    const found = await api('/customers/lookup', { method: 'POST', body: { codes, names, phones } }).catch(() => ({}));
     for (const o of orders) {
       let c = o.code && found['code:' + o.code];
+      if (!c && o.phone && found['phone:' + o.phone]) c = found['phone:' + o.phone];
       if (!c && o.shop && found['name:' + o.shop] && found['name:' + o.shop].length === 1) c = found['name:' + o.shop][0];
+      if (c && o.code && c.code !== normCode(o.code)) o.unsure = (o.unsure ? o.unsure + '；' : '') + `照片讀到編號 ${o.code}，但電話/店名對到客戶檔的 ${c.code}，已用客戶檔資料`;
+      if (c && o.shop && c.name.replace(/\s/g, '') !== o.shop.replace(/\s/g, '')) o.shop = c.name;
       if (c) {
         o.matched = c.code + ' ' + c.name;
         if (!o.code) o.code = c.code;

@@ -238,8 +238,13 @@ async function api(req, env, url) {
   if (path === '/customers/lookup' && method === 'POST') {
     // 照片讀到的店名/編號 → 客戶檔
     needDispatch();
-    const { codes = [], names = [] } = await req.json();
+    const { codes = [], names = [], phones = [] } = await req.json();
     const out = {};
+    for (const ph of phones.slice(0, 50)) {
+      const d = String(ph || '').replace(/\D/g, ''); if (d.length < 7) continue;
+      const r = await db.prepare("SELECT * FROM customers WHERE REPLACE(REPLACE(REPLACE(phone,'-',''),' ',''),'(','') LIKE ? LIMIT 2").bind('%' + d.slice(-8) + '%').all();
+      if (r.results.length === 1) out['phone:' + ph] = r.results[0];
+    }
     for (const c of codes.slice(0, 50)) {
       const code = normCode(c); if (!code) continue;
       const r = await db.prepare('SELECT * FROM customers WHERE code=?').bind(code).first();
@@ -248,7 +253,10 @@ async function api(req, env, url) {
     for (const n of names.slice(0, 50)) {
       const nm = String(n || '').replace(/\s|\(.*?\)|（.*?）/g, '');
       if (nm.length < 2) continue;
-      const r = await db.prepare('SELECT * FROM customers WHERE REPLACE(name,\' \',\'\') LIKE ? ORDER BY LENGTH(name) LIMIT 3').bind('%' + nm + '%').all();
+      let r = await db.prepare('SELECT * FROM customers WHERE REPLACE(name,\' \',\'\') LIKE ? ORDER BY LENGTH(name) LIMIT 3').bind('%' + nm + '%').all();
+      if (!r.results.length && nm.length >= 3) { // 第一個字認錯時，用後面幾個字找
+        r = await db.prepare('SELECT * FROM customers WHERE REPLACE(name,\' \',\'\') LIKE ? ORDER BY LENGTH(name) LIMIT 3').bind('%' + nm.slice(1) + '%').all();
+      }
       if (r.results.length) out['name:' + n] = r.results;
     }
     return json(out);
@@ -434,7 +442,13 @@ function parseJsonArray(text) {
 function ocrPrompt(sups, note) {
   const supTxt = sups.map(s => `${s.name}｜${s.addr}`).join('\n') || '（尚無）';
   return `你在幫「瑞城企業」（新北市板橋的機車零件批發商）整理今天要配送的單據。附上的照片是他們 ERP 印出的「詢價單／出貨單」（藍色複寫紙），也可能有手寫便條或 LINE 截圖。
-每張出貨單的左上角有：客戶編號（例如 "F J5"、"B GU-18"、"D VZ-7"）、客戶名稱、聯絡電話、地址。品名欄列出貨物；手寫勾選、劃掉、改數字都算數：被整行劃掉的品項不算，數字被手寫改過就用手寫的。備註手寫「另訂」「調貨」「缺」代表那項這次不送。
+每張出貨單的左上角有：客戶編號、客戶名稱、聯絡電話、地址。客戶編號是 1 個英文字母 + 空格 + 2~5 個英數字（例如 "F J5"、"B GU-18"、"D VZ-7"），第一個字母代表區域，請逐字母仔細看，F 和 D、B 和 8 容易混淆；電話和地址通常印得最清楚，優先相信它們。
+品名欄列出貨物。請特別注意手寫記號：
+- 整行被橫線劃掉的品項「不送」，不要列入 items。
+- 數量欄的印刷數字被手寫改過（例如 2 改成 1），以手寫的為準；手寫看不清就照印刷數字並在 unsure 說明。
+- 備註手寫「另訂」「調貨」「缺」「另」的那一行「不送」。
+- 只有打勾或沒有記號的品項才算這次要送。
+items 請寫成「品名 規格 ×數量」用頓號分隔，並在最後加上總件數（例如「共 9 條」）。
 請輸出 JSON 陣列，一筆代表一個「要送去的客戶」（同一客戶多張單合併），格式：
 {"code":"客戶編號，保留原樣，沒有就空字串","shop":"客戶名稱","phone":"電話或空字串","addr":"完整地址，看不到就空字串","open":"","close":"","items":"這次要送的貨物摘要，含數量","bulky":false,"urgent":false,"pickup":null,"unsure":""}
 - bulky：輪胎、整箱機油（例如「20 箱」）、體積大的貨為 true。
