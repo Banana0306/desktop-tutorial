@@ -119,7 +119,7 @@
   }
   function stopPills(s, row) {
     let p = '';
-    if (s.kind === 'pickup') p += `<span class="pill pick">取貨</span>`;
+    if (s.kind === 'pickup') p += `<span class="pill pick">${isBack(s) ? '回程取貨' : '取貨'}</span>`;
     if (s.customer_code) p += `<span class="pill">${esc(s.customer_code)}</span>`;
     if (hoursTxt(s)) p += `<span class="pill">營業 ${esc(hoursTxt(s))}</span>`;
     if (s.lat == null) p += `<span class="pill fail">沒座標</span>`;
@@ -136,7 +136,8 @@
     if (s.needs && pr && pr.status === 'pending' && (pr.veh !== s.veh || (pr.seq || 0) > (s.seq || 0))) p += `<span class="pill fail">取貨站要排在前面、同一台車</span>`;
     return p;
   }
-  const linkLine = s => { const pr = partnerOf(s); if (!pr) return ''; return s.kind === 'pickup' ? `<div class="sub">→ 取完送到 ${esc(pr.shop)}</div>` : `<div class="sub">← 先到 ${esc(pr.shop)} 取貨</div>`; };
+  const isBack = s => s.kind === 'pickup' && !S.stops.some(x => x.needs === s.id);
+  const linkLine = s => { const pr = partnerOf(s); if (!pr) return isBack(s) ? `<div class="sub">→ 取完帶回倉庫</div>` : ''; return s.kind === 'pickup' ? `<div class="sub">→ 取完送到 ${esc(pr.shop)}</div>` : `<div class="sub">← 先到 ${esc(pr.shop)} 取貨</div>`; };
   const vehSelect = s => `<select data-act="setveh" data-id="${esc(s.id)}" aria-label="換車">${[['', '未分配']].concat(VEH.map(v => [v, vName(v)])).map(([v, n]) => `<option value="${v}"${s.veh === v ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>`;
   const delBtn = s => S.confirmDel === s.id
     ? `<button class="btn sm urgent" data-act="del" data-id="${esc(s.id)}">${partnerOf(s) ? '連同取貨一起刪' : '確定刪除'}</button>`
@@ -238,6 +239,7 @@
       if (hoursTxt(s)) t += `\n   營業 ${hoursTxt(s)}${r.wait >= 10 ? '（到了要等開門）' : ''}`;
       if (s.items) t += `\n   ${s.items}`;
       if (pr) t += s.kind === 'pickup' ? `\n   → 取完送到 ${pr.shop}` : `\n   ← 貨要先到 ${pr.shop} 拿`;
+      else if (isBack(s)) t += `\n   → 取完帶回倉庫`;
     });
     t += `\n\n${list.length + 1}. 回倉庫　約 ${fmtT(pl.end)} 到`;
     t += `\n\n導航：`; mapsSegments(v).forEach(g => t += `\n${g.label.replace(/ /g, '')} ${g.url}`);
@@ -338,11 +340,15 @@
   // order: {code, shop, phone, addr, lat, lng, open, close, items, bulky, urgent, pickup:{supplier_id?, name, addr, lat, lng, open, close, items}|null, source}
   async function addOrder(o) {
     const list = []; let pId = '';
+    if (o.back) {
+      list.push(baseStop({ kind: 'pickup', supplier_id: o.supplier_id ?? null, shop: o.shop || '供應商', phone: o.phone || '', addr: o.addr, lat: o.lat ?? null, lng: o.lng ?? null, open: normT(o.open), close: normT(o.close), items: '取：' + (o.items || '') + '（帶回倉庫）', bulky: !!o.bulky, urgent: !!o.urgent, source: o.source || 'manual' }));
+    } else {
     if (o.pickup && o.pickup.addr) {
       const p = baseStop({ kind: 'pickup', supplier_id: o.pickup.supplier_id ?? null, shop: o.pickup.name || '供應商', addr: o.pickup.addr, lat: o.pickup.lat ?? null, lng: o.pickup.lng ?? null, open: normT(o.pickup.open), close: normT(o.pickup.close), items: '取：' + (o.pickup.items || o.items || ''), bulky: !!o.bulky, urgent: !!o.urgent, source: o.source || 'manual' });
       pId = p.id; list.push(p);
     }
     list.push(baseStop({ customer_code: normCode(o.code), shop: o.shop, phone: o.phone || '', addr: o.addr, lat: o.lat ?? null, lng: o.lng ?? null, open: normT(o.open), close: normT(o.close), items: o.items || '', bulky: !!o.bulky, urgent: !!o.urgent, needs: pId, source: o.source || 'manual' }));
+    }
     let placed = '';
     if (o.urgent && S.stops.some(s => s.veh)) {
       const r = RC.insertUrgent(ctx(), list, S.stops, S.fleet.active, dayStart(), nowMin());
@@ -358,11 +364,14 @@
     return 'added';
   }
   // 從客戶檔補資料
+  function applySupplier(o, sp) { o.supplier_id = sp.id; o.shop = sp.name; o.addr = sp.addr; o.lat = sp.lat; o.lng = sp.lng; o.open = sp.open; o.close = sp.close; if (!o.phone) o.phone = sp.phone || ''; o.matched = '供應商：' + sp.name; }
   async function enrich(orders) {
-    const codes = orders.map(o => o.code).filter(Boolean), names = orders.filter(o => o.shop).map(o => o.shop), phones = orders.map(o => o.phone).filter(Boolean);
+    for (const o of orders.filter(o => o.back)) { const sp = findSupplier(o.shop); if (sp) applySupplier(o, sp); }
+    const cust = orders.filter(o => !o.back);
+    const codes = cust.map(o => o.code).filter(Boolean), names = cust.filter(o => o.shop).map(o => o.shop), phones = cust.map(o => o.phone).filter(Boolean);
     if (!codes.length && !names.length && !phones.length) return orders;
     const found = await api('/customers/lookup', { method: 'POST', body: { codes, names, phones } }).catch(() => ({}));
-    for (const o of orders) {
+    for (const o of cust) {
       let c = o.code && found['code:' + o.code];
       if (!c && o.phone && found['phone:' + o.phone]) c = found['phone:' + o.phone];
       if (!c && o.shop && found['name:' + o.shop] && found['name:' + o.shop].length === 1) c = found['name:' + o.shop][0];
@@ -402,7 +411,7 @@
     try {
       const fd = new FormData(); S.photo.files.forEach(f => fd.append('images', f)); fd.append('note', $('#p-note').value.trim());
       const { orders } = await api('/ocr', { method: 'POST', body: fd });
-      const rows = orders.filter(x => x && (x.shop || x.addr || x.code)).map(x => ({ on: true, code: normCode(x.code), shop: String(x.shop || ''), phone: String(x.phone || ''), addr: String(x.addr || ''), open: normT(x.open), close: normT(x.close), items: String(x.items || ''), bulky: !!x.bulky, urgent: !!x.urgent, unsure: String(x.unsure || ''), source: 'photo',
+      const rows = orders.filter(x => x && (x.shop || x.addr || x.code)).map(x => ({ on: true, code: normCode(x.code), shop: String(x.shop || ''), phone: String(x.phone || ''), addr: String(x.addr || ''), open: normT(x.open), close: normT(x.close), items: String(x.items || ''), bulky: !!x.bulky, urgent: !!x.urgent, unsure: String(x.unsure || ''), source: 'photo', back: !!x.back,
         pickup: x.pickup && (x.pickup.name || x.pickup.addr) ? { name: String(x.pickup.name || ''), addr: String(x.pickup.addr || ''), items: String(x.pickup.items || ''), open: '', close: '' } : null }));
       S.photo.review = await enrich(rows);
       flash('#p-msg', S.photo.review.length ? `讀到 ${S.photo.review.length} 筆，確認後加入。` : '沒有讀到訂單，換一張清楚一點的試試。');
@@ -417,14 +426,15 @@
     box.innerHTML = `<div class="review">${r.map((x, i) => `<div class="rv">
       <input type="checkbox" data-rvon="${i}" ${x.on ? 'checked' : ''} aria-label="加入這筆">
       <div><div class="shop">${esc(x.shop || '（沒有店名）')}</div>
-        <div class="pills">${x.code ? `<span class="pill">${esc(x.code)}</span>` : ''}${x.urgent ? '<span class="pill urg">急件</span>' : ''}${x.bulky ? '<span class="pill">大件</span>' : ''}${x.pickup ? '<span class="pill pick">要先取貨</span>' : ''}${x.closed_days && String(x.closed_days).split(',').includes(String(weekday(S.date))) ? '<span class="pill fail">今天公休</span>' : ''}</div>
-        ${x.matched ? `<div class="matched">✓ 客戶檔：${esc(x.matched)}</div>` : (x.code ? `<div class="unsure">⚠ 客戶檔沒有 ${esc(x.code)}</div>` : '')}
+        <div class="pills">${x.code ? `<span class="pill">${esc(x.code)}</span>` : ''}${x.urgent ? '<span class="pill urg">急件</span>' : ''}${x.bulky ? '<span class="pill">大件</span>' : ''}${x.pickup ? '<span class="pill pick">要先取貨</span>' : ''}${x.back ? '<span class="pill pick">回程取貨・帶回倉庫</span>' : ''}${x.closed_days && String(x.closed_days).split(',').includes(String(weekday(S.date))) ? '<span class="pill fail">今天公休</span>' : ''}</div>
+        ${x.back ? (x.matched ? `<div class="matched">✓ ${esc(x.matched)}</div>` : `<div class="unsure">⚠ 供應商清單沒有這家，請選下面的供應商或補地址</div>`) : x.matched ? `<div class="matched">✓ 客戶檔：${esc(x.matched)}</div>` : (x.code ? `<div class="unsure">⚠ 客戶檔沒有 ${esc(x.code)}</div>` : '')}
         ${x.unsure ? `<div class="unsure">⚠ ${esc(x.unsure)}</div>` : ''}
         <div class="rv-edit">${inp(i, 'shop', '店名')}${inp(i, 'addr', '地址')}
           <div class="rv-row">${inp(i, 'open', '開門 09:00')}${inp(i, 'close', '打烊 20:00')}${inp(i, 'phone', '電話')}</div>${inp(i, 'items', '貨物')}
           <div class="rv-row"><label class="check"><input type="checkbox" data-rvb="${i}" ${x.bulky ? 'checked' : ''}>大件</label><label class="check"><input type="checkbox" data-rvu="${i}" ${x.urgent ? 'checked' : ''}>急件</label>
-            <label class="check"><input type="checkbox" data-rvp="${i}" ${x.pickup ? 'checked' : ''}>先取貨</label></div>
-          ${x.pickup ? `<div class="lbl">先取貨</div><select data-rvsup="${i}"><option value="">（自填供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.pickup.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>${inp(i, 'name', '供應商', 1)}${inp(i, 'addr', '供應商地址', 1)}${inp(i, 'items', '要取的貨', 1)}${!x.pickup.addr ? '<div class="unsure">⚠ 供應商地址空白，請補上或選上面的供應商</div>' : ''}` : ''}
+            ${x.back ? '' : `<label class="check"><input type="checkbox" data-rvp="${i}" ${x.pickup ? 'checked' : ''}>先取貨</label>`}<label class="check"><input type="checkbox" data-rvback="${i}" ${x.back ? 'checked' : ''}>回程取貨（帶回倉庫）</label></div>
+          ${x.back ? `<select data-rvbsup="${i}"><option value="">（選供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
+          ${x.pickup && !x.back ? `<div class="lbl">先取貨</div><select data-rvsup="${i}"><option value="">（自填供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.pickup.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>${inp(i, 'name', '供應商', 1)}${inp(i, 'addr', '供應商地址', 1)}${inp(i, 'items', '要取的貨', 1)}${!x.pickup.addr ? '<div class="unsure">⚠ 供應商地址空白，請補上或選上面的供應商</div>' : ''}` : ''}
         </div></div></div>`).join('')}</div>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">加入勾選的 ${r.filter(x => x.on).length} 筆</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
   }
@@ -437,6 +447,8 @@
     if (el.dataset.rvon != null) { r[+el.dataset.rvon].on = el.checked; renderReview(); }
     if (el.dataset.rvb != null) r[+el.dataset.rvb].bulky = el.checked;
     if (el.dataset.rvu != null) r[+el.dataset.rvu].urgent = el.checked;
+    if (el.dataset.rvback != null) { const x = r[+el.dataset.rvback]; x.back = el.checked; if (x.back) { x.pickup = null; const sp = findSupplier(x.shop); if (sp) applySupplier(x, sp); } else { x.supplier_id = null; x.matched = ''; } renderReview(); }
+    if (el.dataset.rvbsup != null) { const x = r[+el.dataset.rvbsup], sp = S.suppliers.find(s => s.id == el.value); if (sp) { applySupplier(x, sp); renderReview(); } }
     if (el.dataset.rvp != null) { const x = r[+el.dataset.rvp]; x.pickup = el.checked ? { name: '', addr: '', items: '', open: '', close: '' } : null; renderReview(); }
     if (el.dataset.rvsup != null) { const x = r[+el.dataset.rvsup], sp = S.suppliers.find(s => s.id == el.value); if (sp) { x.pickup = { supplier_id: sp.id, name: sp.name, addr: sp.addr, lat: sp.lat, lng: sp.lng, open: sp.open, close: sp.close, items: x.pickup.items }; renderReview(); } }
   });
@@ -446,7 +458,7 @@
     const items = (S.photo.review || []).filter(x => x.on && x.shop && x.addr);
     e.target.disabled = true; let n = 0; const urg = [];
     try {
-      for (const x of items) { const r = await addOrder(Object.assign({}, x, { pickup: x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
+      for (const x of items) { const r = await addOrder(Object.assign({}, x, { pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
       S.photo.review = null; S.photo.files = []; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
       await refresh();
       flash('#p-msg', `已加入 ${n} 筆${urg.length ? '，急件已插進 ' + urg.join('、') : ''}。接著按「用 Google 排車」。`);
@@ -469,7 +481,20 @@
     $('#f-shop').dataset.cust = JSON.stringify({ code: c.code, phone: c.phone, lat: c.lat, lng: c.lng, addr: c.addr });
   });
   $('#f-pick').addEventListener('change', e => { $('#f-pickbox').hidden = !e.target.checked; });
-  function renderSupSelect() { const sel = $('#f-sup'), cur = sel.value; sel.innerHTML = S.suppliers.length ? S.suppliers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('') : '<option value="">（先到「供應商」新增）</option>'; if (cur) sel.value = cur; }
+  function renderSupSelect() { ['#f-sup', '#b-sup'].forEach(q => { const sel = $(q), cur = sel.value; sel.innerHTML = S.suppliers.length ? S.suppliers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('') : '<option value="">（先到「供應商」新增）</option>'; if (cur) sel.value = cur; }); }
+  $('#b-add').addEventListener('click', async e => {
+    const sp = S.suppliers.find(x => x.id == $('#b-sup').value);
+    if (!sp) { flash('#b-msg', '請先選供應商。', true); return; }
+    if (!sp.addr) { flash('#b-msg', '這家供應商沒有地址，請先到「供應商」補上。', true); return; }
+    e.target.disabled = true;
+    try {
+      const o = { back: true, items: $('#b-items').value.trim(), bulky: $('#b-bulky').checked, urgent: false, source: 'manual' }; applySupplier(o, sp);
+      await addOrder(o);
+      $('#b-items').value = ''; $('#b-bulky').checked = false;
+      await refresh(); flash('#b-msg', '已加入回程取貨，按「用 Google 排車」會排在送完貨回倉的路上。');
+    } catch (err) { flash('#b-msg', err.message, true); }
+    finally { e.target.disabled = false; }
+  });
   $('#f-add').addEventListener('click', async e => {
     const shop = $('#f-shop').value.trim(), addr = $('#f-addr').value.trim();
     if (!shop || !addr) { flash('#f-msg', '請填店名和地址。', true); return; }
@@ -496,7 +521,7 @@
     if (!Array.isArray(arr)) { flash('#p-msg', 'JSON 要是陣列。', true); return; }
     e.target.disabled = true;
     try {
-      const rows = await enrich(arr.map(x => ({ on: true, code: normCode(x.code), shop: String(x.shop || ''), phone: String(x.phone || ''), addr: String(x.addr || ''), open: normT(x.open), close: normT(x.close), items: String(x.items || ''), bulky: !!x.bulky, urgent: !!x.urgent, unsure: String(x.unsure || ''), source: 'claude',
+      const rows = await enrich(arr.map(x => ({ on: true, code: normCode(x.code), shop: String(x.shop || ''), phone: String(x.phone || ''), addr: String(x.addr || ''), open: normT(x.open), close: normT(x.close), items: String(x.items || ''), bulky: !!x.bulky, urgent: !!x.urgent, unsure: String(x.unsure || ''), source: 'claude', back: !!x.back,
         pickup: x.pickup && (x.pickup.name || x.pickup.addr) ? { name: String(x.pickup.name || ''), addr: String(x.pickup.addr || ''), items: String(x.pickup.items || ''), open: '', close: '' } : null })));
       S.photo.review = rows; renderReview(); $('#j-text').value = '';
       flash('#p-msg', `讀到 ${rows.length} 筆，請在上面「拍照排單」區確認後加入。`);
@@ -748,13 +773,13 @@
       const n = pend[0], idx = list.indexOf(n) + 1, r = pl.rows[n.id], pr = partnerOf(n), pick = n.kind === 'pickup';
       const nav = mapsDir('', n.addr, [], v);
       main = `<article class="next" style="--vc:var(--${v})">
-        <div class="eyebrow">下一站・第 ${idx} 站${pick ? '・供應商取貨' : ''}${n.urgent ? '・急件' : ''}・${esc(etaOf(n))} 到</div>
+        <div class="eyebrow">下一站・第 ${idx} 站${pick ? (pr ? '・供應商取貨' : '・回程取貨') : ''}${n.urgent ? '・急件' : ''}・${esc(etaOf(n))} 到</div>
         <h2>${esc(n.shop)}</h2>
         <div class="addr">${esc(n.addr)}</div>
         ${n.phone ? `<div class="tel">☎ <a href="tel:${esc(n.phone.replace(/[^\d+]/g, ''))}">${esc(n.phone)}</a></div>` : ''}
         ${hoursTxt(n) ? `<div class="sub">營業 ${esc(hoursTxt(n))}${r && r.wait >= 10 ? `・會早到 ${fmtDur(r.wait)}` : ''}${r && r.late > 0 ? '・可能已打烊，先打電話' : ''}</div>` : ''}
         <div class="sub">${esc(n.items)}</div>
-        ${pr ? `<div class="sub"><b>${pick ? '取完送到：' : '這批貨是從 '}${esc(pr.shop)}${pick ? '' : ' 取的'}</b></div>` : ''}
+        ${pr ? `<div class="sub"><b>${pick ? '取完送到：' : '這批貨是從 '}${esc(pr.shop)}${pick ? '' : ' 取的'}</b></div>` : (pick ? '<div class="sub"><b>取完帶回倉庫</b></div>' : '')}
         <div class="acts">
           <a class="navbtn" href="${esc(nav)}" target="_blank" rel="noopener">開 Google 地圖導航</a>
           <button class="btn done" data-act="done" data-id="${esc(n.id)}">${pick ? '已取貨' : '已送達'}</button>

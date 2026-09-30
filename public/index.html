@@ -75,6 +75,16 @@
         </details>
 
         <details class="panel">
+          <summary>回程取貨（去供應商拿貨帶回倉庫）</summary>
+          <p class="hint">不是要送給客戶的貨，例如去代理商拿進貨。排車會盡量排在送完貨、回倉庫的路上；供應商快打烊的話會提早去。</p>
+          <label class="field"><span class="lbl">供應商</span><select id="b-sup"></select></label>
+          <label class="field"><span class="lbl">要取的貨</span><input id="b-items" placeholder="例：輪胎 20 條"></label>
+          <label class="check"><input type="checkbox" id="b-bulky">大件（只給汽車）</label>
+          <button class="btn primary" id="b-add">加入回程取貨</button>
+          <p class="msg" id="b-msg" role="status"></p>
+        </details>
+
+        <details class="panel">
           <summary>貼上 Claude 整理好的 JSON</summary>
           <p class="hint">把照片傳給 Claude 對話整理時，它會給一段 JSON，貼這裡就能進來。</p>
           <textarea id="j-text" class="copybox" placeholder='[{"code":"FJ5","shop":"五洲機車行","addr":"…","items":"…","bulky":true}]'></textarea>
@@ -90,6 +100,7 @@
             <li>機車盡量不跑超過 <span id="r-radius">10</span> km（會算入成本，但不是硬規定）</li>
             <li>汽車用 Google 汽車路線＋路況，機車用 Google 機車路線</li>
             <li>調貨：供應商取貨站排在該客戶前面，同一台車</li>
+          <li>回程取貨：拿回倉庫的貨盡量排在送完貨、回倉的路上</li>
             <li>照營業時間排，趕不上打烊會標紅；急件優先；公休的不排</li>
           </ul>
           <button class="btn primary big" id="auto">用 Google 排車</button>

@@ -12,6 +12,7 @@
     makespan: 3,     // 最晚回倉的那台車，額外計 3 倍 → 先讓最晚那台早點回來
     balance: 30,     // 每台車工時（小時）平方 × 30 → 工作量盡量平均分給有出車的司機
     motoFar: 2.5,    // 機車跑超過設定距離，每公里罰 2.5 分（軟限制，不是硬規則）
+    carry: 5,        // 回程取貨（拿回倉庫的貨）之後每多送一站罰 5 分 → 盡量排在送完貨、回倉的路上
   };
 
   const tmin = h => { if (!h) return null; const m = /^(\d{1,2})[:：]?(\d{2})$/.exec(String(h).trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
@@ -59,6 +60,11 @@
     if (route.length) { const l = travel(v, p, 'W'); km += l.km; t += l.min; }
     return { rows, end: t, km, late, wait, est, urg };
   }
+  // 回程取貨＝取貨站但沒有客戶在等它（貨是要帶回倉庫的）
+  function markBack(stops) {
+    const needed = new Set(stops.map(s => s.needs).filter(Boolean));
+    stops.forEach(s => { s._back = s.kind === 'pickup' && !needed.has(s.id); });
+  }
   function precedenceOk(route, doneIds) {
     const seen = new Set(doneIds);
     for (const s of route) { if (s.needs && !seen.has(s.needs)) return false; seen.add(s.id); }
@@ -72,6 +78,7 @@
     if (!precedenceOk(route, st.doneIds)) return { cost: Infinity, dur: Infinity };
     const sim = simulate(ctx, v, route, st.t, st.pt);
     let cost = (sim.end - st.t) + sim.late * W.late + sim.urg * W.urgent;
+    let ob = 0; for (const s of route) { if (s._back) ob++; else if (s.kind !== 'pickup') cost += ob * W.carry; }
     if (MODE[v] === 'moto') {
       const R = ctx.motoRadiusKm || 10;
       for (const s of route) { const k = farKm(ctx, s); if (k > R) cost += (k - R) * W.motoFar; }
@@ -87,7 +94,7 @@
     const used = new Array(n).fill(false), seq = [], seen = new Set(st.doneIds);
     const R = ctx.motoRadiusKm || 10, moto = MODE[v] === 'moto';
     const extra = moto ? list.reduce((a, s) => { const k = farKm(ctx, s); return a + (k > R ? (k - R) * W.motoFar : 0); }, 0) : 0;
-    (function dfs(p, t, acc) {
+    (function dfs(p, t, acc, ob) {
       if (acc + extra >= bestCost) return;
       if (seq.length === n) {
         const total = acc + travel(v, p, 'W').min + extra;
@@ -101,12 +108,12 @@
         const l = travel(v, p, s); let at = t + l.min;
         const [o, cl] = win(s); let w = 0; if (at < o) { w = o - at; at = o; }
         const lt = at > cl ? at - cl : 0;
-        const add = l.min + w + per + lt * W.late + (s.urgent ? (at - st.t) * W.urgent : 0);
+        const add = l.min + w + per + lt * W.late + (s.urgent ? (at - st.t) * W.urgent : 0) + (!s._back && s.kind !== 'pickup' ? ob * W.carry : 0);
         used[i] = true; seq.push(s); seen.add(s.id);
-        dfs(s, at + per, acc + add);
+        dfs(s, at + per, acc + add, ob + (s._back ? 1 : 0));
         used[i] = false; seq.pop(); seen.delete(s.id);
       }
-    })(st.pt, st.t, 0);
+    })(st.pt, st.t, 0, 0);
     return best || list.slice();
   }
   function localOrder(ctx, v, route, st) {
@@ -272,7 +279,7 @@
 
   // 回傳 {id:{veh,seq}}；skip：今日公休等不排的 id
   function autoAssign(ctx, stops, active, dayStartMin, nowMin, skip) {
-    skip = skip || new Set(); ctx._travel = null;
+    skip = skip || new Set(); ctx._travel = null; markBack(stops);
     const pending = stops.filter(s => s.status === 'pending' && !skip.has(s.id));
     const vs = VEH.filter(v => active[v] || fixedOf(stops, v).length);
     const states = {}; VEH.forEach(v => states[v] = startState(stops, v, dayStartMin, nowMin));
@@ -290,7 +297,7 @@
 
   // 急件插入：現有路線不動其他車，只挑多花時間最少的那台插入並重排那台
   function insertUrgent(ctx, newStops, stops, active, dayStartMin, nowMin) {
-    ctx._travel = null;
+    ctx._travel = null; markBack(stops.concat(newStops));
     const u = { stops: newStops, bulky: newStops.some(s => s.bulky), forced: null };
     let best = '', bc = Infinity, bestRoute = null;
     for (const v of eligible(u, active)) {
@@ -307,7 +314,7 @@
   }
 
   function optimizeVehicle(ctx, v, stops, dayStartMin, nowMin) {
-    ctx._travel = null;
+    ctx._travel = null; markBack(stops);
     const st = startState(stops, v, dayStartMin, nowMin);
     return orderRoute(ctx, v, stops.filter(s => s.veh === v && s.status === 'pending'), st);
   }
@@ -319,5 +326,5 @@
     const all = simulate(ctx, v, list, dayStartMin, 'W');
     return { rows: sim.rows, end: sim.end, kmLeft: sim.km, kmAll: all.km, late: sim.late, startT: st.t, est: sim.est };
   }
-  g.RC = { VEH, MODE, W, tmin, fmtT, hav, autoAssign, insertUrgent, planOf, simulate, optimizeVehicle, fixedOf, startState };
+  g.RC = { VEH, MODE, W, markBack, tmin, fmtT, hav, autoAssign, insertUrgent, planOf, simulate, optimizeVehicle, fixedOf, startState };
 })(typeof window !== 'undefined' ? window : globalThis);
