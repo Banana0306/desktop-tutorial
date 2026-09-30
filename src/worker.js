@@ -175,7 +175,9 @@ async function api(req, env, url) {
   if (path === '/state' && method === 'GET') {
     const date = url.searchParams.get('date') || today();
     const [stops, fleet, sups, cnt] = await Promise.all([
-      db.prepare('SELECT * FROM stops WHERE date=? ORDER BY veh, seq').bind(date).all(),
+      // 司機只拿得到自己那台車的站；沒設定車輛的司機什麼都看不到
+      isDispatch ? db.prepare('SELECT * FROM stops WHERE date=? ORDER BY veh, seq').bind(date).all()
+        : db.prepare('SELECT * FROM stops WHERE date=? AND veh=? AND veh<>\'\' ORDER BY seq').bind(date, me.veh || '').all(),
       db.prepare("SELECT value FROM settings WHERE key='fleet'").first(),
       isDispatch ? db.prepare('SELECT * FROM suppliers ORDER BY name').all() : { results: [] },
       isDispatch ? db.prepare('SELECT COUNT(*) n, SUM(lat IS NULL) nogeo, SUM(open<>\'\') hours FROM customers').first() : null
@@ -208,7 +210,8 @@ async function api(req, env, url) {
       const keys = Object.keys(p).filter(k => allowed.includes(k));
       if (!keys.length) continue;
       const vals = keys.map(k => typeof p[k] === 'boolean' ? (p[k] ? 1 : 0) : p[k]);
-      stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}, updated_at=datetime('now') WHERE id=?`).bind(...vals, p.id));
+      if (isDispatch) stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}, updated_at=datetime('now') WHERE id=?`).bind(...vals, p.id));
+      else stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>''`).bind(...vals, p.id, me.veh || ''));
     }
     if (stmts.length) await db.batch(stmts);
     return json({ ok: true, n: stmts.length });

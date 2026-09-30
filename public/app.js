@@ -556,7 +556,7 @@
       else if (act === 'failopen') { S.failFor = S.failFor === id ? null : id; render(); }
       else if (act === 'fail') { S.failFor = null; await api('/stops', { method: 'PATCH', body: [{ id, status: 'fail', note: b.dataset.r, done_at: new Date().toISOString() }] }); await refresh(); }
       else if (act === 'undo') { await api('/stops', { method: 'PATCH', body: [{ id, status: 'pending', done_at: '', note: '' }] }); await refresh(); }
-      else if (act === 'drv') { S.drv = b.dataset.v; S.failFor = null; render(); }
+      else if (act === 'drv' && S.me.canDispatch) { S.drv = b.dataset.v; S.failFor = null; render(); }
       else if (act === 'delsup') {
         const k = 'sup:' + id; if (S.confirmDel !== k) { S.confirmDel = k; renderSuppliers(); setTimeout(() => { if (S.confirmDel === k) { S.confirmDel = null; renderSuppliers(); } }, 4000); return; }
         S.confirmDel = null; await api('/suppliers', { method: 'DELETE', body: { id: +id } }); await refresh();
@@ -764,7 +764,8 @@
     const v = S.drv, list = vStops(v), pend = list.filter(s => s.status === 'pending'), pl = PLANS[v];
     const done = list.length - pend.length;
     const etaOf = s => s.eta || (pl.rows[s.id] ? '約 ' + fmtT(pl.rows[s.id].eta) : '');
-    const chips = `<div class="chips" role="group" aria-label="選擇車輛">${VEH.map(x => `<button class="chip" style="--vc:var(--${x})" data-act="drv" data-v="${x}" aria-pressed="${x === v}">${esc(vName(x))}</button>`).join('')}</div>`;
+    if (!S.me.canDispatch && !VEH.includes(S.me.veh)) { $('#driver').innerHTML = `<div class="empty">老闆還沒幫你設定車輛，暫時看不到路線。請找老闆在「使用者」幫你選車。</div>`; return; }
+    const chips = !S.me.canDispatch ? '' : `<div class="chips" role="group" aria-label="選擇車輛">${VEH.map(x => `<button class="chip" style="--vc:var(--${x})" data-act="drv" data-v="${x}" aria-pressed="${x === v}">${esc(vName(x))}</button>`).join('')}</div>`;
     const prog = `<div style="--vc:var(--${v});display:grid;gap:6px"><div class="row"><span class="num" style="font-size:20px;font-weight:600">${done}/${list.length}</span><span class="sub">站完成</span>${pend.length ? `<span class="endt">預計 ${fmtT(pl.end)} 回倉</span>` : ''}</div><div class="bar"><i style="width:${list.length ? done / list.length * 100 : 0}%"></i></div></div>`;
     let main;
     if (!list.length) main = `<div class="empty">${mmdd(S.date)} 還沒有排到 ${esc(vName(v))} 的路線。</div>`;
