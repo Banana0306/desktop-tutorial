@@ -147,8 +147,9 @@
     $('#unassigned').innerHTML = u.length ? `<div class="lbl">未分配 ${u.length} 筆</div><div class="unassigned">${u.map(s => `
       <div class="u-item"><div class="grow"><div class="shop">${esc(s.shop)}</div><div class="sub">${esc(s.addr)}</div>${linkLine(s)}<div class="pills">${stopPills(s)}</div></div>${vehSelect(s)}${delBtn(s)}</div>`).join('')}</div>` : `<p class="hint">沒有待分配的訂單。</p>`;
   }
-  function mapsDir(origin, dest, way) {
-    let u = 'https://www.google.com/maps/dir/?api=1&travelmode=driving';
+  const navMode = v => MODE[v] === 'moto' ? 'two-wheeler' : 'driving';
+  function mapsDir(origin, dest, way, v) {
+    let u = 'https://www.google.com/maps/dir/?api=1&travelmode=' + navMode(v);
     if (origin) u += '&origin=' + encodeURIComponent(origin);
     u += '&destination=' + encodeURIComponent(dest);
     if (way && way.length) u += '&waypoints=' + encodeURIComponent(way.join('|'));
@@ -157,12 +158,19 @@
   function mapsSegments(v) {
     const list = vStops(v), pend = list.filter(s => s.status === 'pending'), offset = list.length - pend.length, lf = lastFixed(v);
     const segs = []; let origin = lf ? lf.addr : S.me.warehouse.addr;
-    for (let i = 0; i < pend.length; i += 4) {
-      const chunk = pend.slice(i, i + 4);
-      segs.push({ from: offset + i + 1, to: offset + i + chunk.length, url: mapsDir(origin, chunk[chunk.length - 1].addr, chunk.slice(0, -1).map(s => s.addr)) });
-      origin = chunk[chunk.length - 1].addr;
+    const pts = pend.map(s => s.addr).concat([S.me.warehouse.addr]); // 最後一段一定回倉
+    for (let i = 0; i < pts.length; i += 4) {
+      const chunk = pts.slice(i, i + 4), hasW = i + chunk.length === pts.length, n = chunk.length - (hasW ? 1 : 0);
+      const from = offset + i + 1, to = offset + i + n;
+      const label = n <= 0 ? '回倉' : (from === to ? `第 ${from} 站` : `第 ${from}–${to} 站`) + (hasW ? '＋回倉' : '');
+      segs.push({ from, to, label, url: mapsDir(origin, chunk[chunk.length - 1], chunk.slice(0, -1), v) });
+      origin = chunk[chunk.length - 1];
     }
     return segs;
+  }
+  function retRow(v, pl) {
+    const R = S.routes[v], leg = R && R.legs.length ? R.legs[R.legs.length - 1] : null;
+    return `<li class="stop ret"><span class="seq">倉</span><div><div class="shop">回倉庫</div><div class="sub">${esc(S.me.warehouse.addr)}</div><div class="sub">預計 <span class="num">${fmtT(pl.end)}</span> 到倉${leg ? `・最後一段 <span class="num">${leg.km.toFixed(1)}</span> km／<span class="num">${Math.round(leg.min)}</span> 分` : ''}</div></div><div></div></li>`;
   }
   function renderBoard() {
     const cards = VEH.map(v => {
@@ -189,10 +197,10 @@
               <button class="icon" data-act="down" data-id="${esc(s.id)}" ${pi >= pend.length - 1 ? 'disabled' : ''} aria-label="往後">↓</button>
               ${delBtn(s)}</div>${vehSelect(s)}` : `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回未完成</button>`}</div>
           </li>`;
-        }).join('') : `<li class="empty">${on ? '還沒有排到這台車。' : '今日不出車，排車會略過。'}</li>`}</ol>
+        }).join('') + (pend.length ? retRow(v, pl) : '') : `<li class="empty">${on ? '還沒有排到這台車。' : '今日不出車，排車會略過。'}</li>`}</ol>
         ${pend.length ? `<div class="veh-f">
           <div class="lbl">Google 地圖導航（每段 4 站）</div>
-          <div class="nav">${mapsSegments(v).map(g => `<a href="${esc(g.url)}" target="_blank" rel="noopener">第 ${g.from}–${g.to} 站</a>`).join('')}</div>
+          <div class="nav">${mapsSegments(v).map(g => `<a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.label)}</a>`).join('')}</div>
           <button class="btn" data-act="copy" data-v="${v}">複製路線傳 LINE</button>
           ${S.copyFor === v ? `<textarea class="copybox" readonly id="copy-${v}">${esc(lineText(v))}</textarea><p class="hint">自動複製失敗，請長按上面文字全選複製。</p>` : ''}
         </div>` : ''}
@@ -231,7 +239,8 @@
       if (s.items) t += `\n   ${s.items}`;
       if (pr) t += s.kind === 'pickup' ? `\n   → 取完送到 ${pr.shop}` : `\n   ← 貨要先到 ${pr.shop} 拿`;
     });
-    t += `\n\n導航：`; mapsSegments(v).forEach(g => t += `\n第${g.from}–${g.to}站 ${g.url}`);
+    t += `\n\n${list.length + 1}. 回倉庫　約 ${fmtT(pl.end)} 到`;
+    t += `\n\n導航：`; mapsSegments(v).forEach(g => t += `\n${g.label.replace(/ /g, '')} ${g.url}`);
     t += `\n\n每完成一站請開排車台按「已送達／已取貨」：${location.origin}`;
     return t;
   }
@@ -734,10 +743,10 @@
     const prog = `<div style="--vc:var(--${v});display:grid;gap:6px"><div class="row"><span class="num" style="font-size:20px;font-weight:600">${done}/${list.length}</span><span class="sub">站完成</span>${pend.length ? `<span class="endt">預計 ${fmtT(pl.end)} 回倉</span>` : ''}</div><div class="bar"><i style="width:${list.length ? done / list.length * 100 : 0}%"></i></div></div>`;
     let main;
     if (!list.length) main = `<div class="empty">${mmdd(S.date)} 還沒有排到 ${esc(vName(v))} 的路線。</div>`;
-    else if (!pend.length) main = `<div class="alldone">全部完成，辛苦了！回倉庫路上注意安全。</div>`;
+    else if (!pend.length) main = `<div class="alldone">全部完成，辛苦了！回倉庫路上注意安全。</div><div class="acts" style="--vc:var(--${v})"><a class="navbtn" href="${esc(mapsDir('', S.me.warehouse.addr, [], v))}" target="_blank" rel="noopener">開 Google 地圖導航回倉庫</a></div>`;
     else {
       const n = pend[0], idx = list.indexOf(n) + 1, r = pl.rows[n.id], pr = partnerOf(n), pick = n.kind === 'pickup';
-      const nav = 'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=' + encodeURIComponent(n.addr);
+      const nav = mapsDir('', n.addr, [], v);
       main = `<article class="next" style="--vc:var(--${v})">
         <div class="eyebrow">下一站・第 ${idx} 站${pick ? '・供應商取貨' : ''}${n.urgent ? '・急件' : ''}・${esc(etaOf(n))} 到</div>
         <h2>${esc(n.shop)}</h2>
@@ -758,7 +767,7 @@
     const lst = list.length > 1 || (list.length && !pend.length) ? `<div class="lbl">全部站點</div><ol class="stops dlist" style="--vc:var(--${v})">${list.map((s, i) => s === pend[0] ? '' : `
       <li class="stop${s.status !== 'pending' ? ' done' : ''}${s.kind === 'pickup' ? ' pickup' : ''}"><span class="seq">${i + 1}</span>
         <div><div class="shop">${esc(s.shop)}</div>${linkLine(s)}<div class="sub">${esc(s.addr)}</div><div class="pills">${stopPills(s, pl.rows[s.id])}</div></div>
-        <div class="ctl">${s.status !== 'pending' ? `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回</button>` : ''}</div></li>`).join('')}</ol>` : '';
+        <div class="ctl">${s.status !== 'pending' ? `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回</button>` : ''}</div></li>`).join('')}${pend.length ? retRow(v, pl) : ''}</ol>` : '';
     $('#driver').innerHTML = chips + prog + main + lst;
   }
 
