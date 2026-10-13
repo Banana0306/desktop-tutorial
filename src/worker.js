@@ -65,6 +65,8 @@ async function migrate(env) {
   }
   // 指定車輛：排車員手動指定的站，全自動排車不會換到別台車
   try { await env.DB.exec('ALTER TABLE stops ADD COLUMN pinned INTEGER DEFAULT 0'); } catch (e) { /* 已存在 */ }
+  // 司機新增店家／改順序 → 排車台要看到提示，排車員按「知道了」清掉
+  try { await env.DB.exec("ALTER TABLE stops ADD COLUMN notice TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
   migrated = true;
 }
 const pinHash = (env, pin) => hmac(env.SESSION_SECRET, 'pin:' + String(pin).trim());
@@ -189,14 +191,19 @@ async function api(req, env, url) {
 
   // ----- 站點 -----
   if (path === '/stops' && method === 'POST') {
-    needDispatch();
-    const list = await req.json();
+    let list = await req.json();
     if (!Array.isArray(list) || !list.length) bad('沒有資料');
-    const stmt = db.prepare(`INSERT INTO stops (id,date,kind,needs,customer_code,supplier_id,shop,phone,addr,lat,lng,open,close,items,bulky,urgent,veh,seq,eta,leg_min,leg_km,status,note,done_at,source,pinned)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    if (!isDispatch) {
+      // 司機自己新增店家：只能加到自己那台車，一次最多 3 筆，排車台會看到提示
+      if (!VEH.includes(me.veh)) throw new HttpError(403, '老闆還沒幫你設定車輛，不能新增店家');
+      if (list.length > 3) bad('一次最多新增 3 家');
+      list = list.map(x => Object.assign({}, x, { kind: 'deliver', needs: '', veh: me.veh, pinned: 1, status: 'pending', done_at: '', eta: '', source: 'driver', notice: me.name + ' 新增' }));
+    }
+    const stmt = db.prepare(`INSERT INTO stops (id,date,kind,needs,customer_code,supplier_id,shop,phone,addr,lat,lng,open,close,items,bulky,urgent,veh,seq,eta,leg_min,leg_km,status,note,done_at,source,pinned,notice)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
     await db.batch(list.map(x => {
       const o = normStop(x);
-      return stmt.bind(o.id, o.date, o.kind, o.needs, o.customer_code, o.supplier_id, o.shop, o.phone, o.addr, o.lat, o.lng, o.open, o.close, o.items, o.bulky, o.urgent, o.veh, o.seq, o.eta, o.leg_min, o.leg_km, o.status, o.note, o.done_at, o.source, o.pinned);
+      return stmt.bind(o.id, o.date, o.kind, o.needs, o.customer_code, o.supplier_id, o.shop, o.phone, o.addr, o.lat, o.lng, o.open, o.close, o.items, o.bulky, o.urgent, o.veh, o.seq, o.eta, o.leg_min, o.leg_km, o.status, o.note, o.done_at, o.source, o.pinned, o.notice);
     }));
     return json({ ok: true, n: list.length });
   }
@@ -204,8 +211,8 @@ async function api(req, env, url) {
     const list = await req.json();
     if (!Array.isArray(list) || !list.length) bad('沒有資料');
     const allowed = isDispatch
-      ? ['kind', 'needs', 'customer_code', 'supplier_id', 'shop', 'phone', 'addr', 'lat', 'lng', 'open', 'close', 'items', 'bulky', 'urgent', 'veh', 'seq', 'eta', 'leg_min', 'leg_km', 'status', 'note', 'done_at', 'pinned']
-      : ['status', 'note', 'done_at'];
+      ? ['kind', 'needs', 'customer_code', 'supplier_id', 'shop', 'phone', 'addr', 'lat', 'lng', 'open', 'close', 'items', 'bulky', 'urgent', 'veh', 'seq', 'eta', 'leg_min', 'leg_km', 'status', 'note', 'done_at', 'pinned', 'notice']
+      : ['status', 'note', 'done_at', 'seq', 'eta'];
     const stmts = [];
     for (const p of list) {
       if (!p.id) bad('缺 id');
@@ -213,7 +220,12 @@ async function api(req, env, url) {
       if (!keys.length) continue;
       const vals = keys.map(k => typeof p[k] === 'boolean' ? (p[k] ? 1 : 0) : p[k]);
       if (isDispatch) stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}, updated_at=datetime('now') WHERE id=?`).bind(...vals, p.id));
-      else stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>''`).bind(...vals, p.id, me.veh || ''));
+      else {
+        // 司機改順序 → 標記給排車台看（司機新增的店維持「新增」提示）
+        const mark = keys.includes('seq') ? ", notice=CASE WHEN notice LIKE '%新增' THEN notice ELSE ? END" : '';
+        const extra = mark ? [me.name + ' 改了順序'] : [];
+        stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}${mark}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>'' AND status='pending'`).bind(...vals, ...extra, p.id, me.veh || ''));
+      }
     }
     if (stmts.length) await db.batch(stmts);
     return json({ ok: true, n: stmts.length });
@@ -228,8 +240,14 @@ async function api(req, env, url) {
 
   // ----- 客戶 -----
   if (path === '/customers' && method === 'GET') {
-    needDispatch();
     const q = (url.searchParams.get('q') || '').trim();
+    if (!isDispatch) {
+      // 司機新增店家時搜尋客戶檔：至少 2 個字、最多 8 筆、只給送貨要用的欄位
+      if (q.length < 2) return json([]);
+      const like = '%' + q + '%';
+      const r = await db.prepare('SELECT code, name, phone, addr, lat, lng, open, close, closed_days FROM customers WHERE code LIKE ? OR name LIKE ? ORDER BY code LIMIT 8').bind(like, like).all();
+      return json(r.results);
+    }
     const mode = url.searchParams.get('mode') || '';
     const limit = Math.min(+url.searchParams.get('limit') || 200, 2000);
     let sql = 'SELECT * FROM customers', args = [];
@@ -432,7 +450,7 @@ function normStop(x) {
     lat: x.lat ?? null, lng: x.lng ?? null, open: normTime(x.open), close: normTime(x.close), items: str(x.items),
     bulky: x.bulky ? 1 : 0, urgent: x.urgent ? 1 : 0, veh: VEH.includes(x.veh) ? x.veh : '', seq: +x.seq || 0,
     eta: str(x.eta), leg_min: x.leg_min ?? null, leg_km: x.leg_km ?? null,
-    status: ['pending', 'done', 'fail'].includes(x.status) ? x.status : 'pending', note: str(x.note), done_at: str(x.done_at), source: str(x.source), pinned: x.pinned && VEH.includes(x.veh) ? 1 : 0
+    status: ['pending', 'done', 'fail'].includes(x.status) ? x.status : 'pending', note: str(x.note), done_at: str(x.done_at), source: str(x.source), pinned: x.pinned && VEH.includes(x.veh) ? 1 : 0, notice: str(x.notice)
   };
 }
 function rowToStop(r) { return { ...r, bulky: !!r.bulky, urgent: !!r.urgent, pinned: !!r.pinned }; }

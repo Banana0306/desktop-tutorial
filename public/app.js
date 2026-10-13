@@ -15,7 +15,7 @@
   const weekday = d => { const [y, m, da] = d.split('-').map(Number); return new Date(y, m - 1, da).getDay(); };
 
   const S = { me: null, date: today(), stops: [], fleet: null, suppliers: [], customers: null, view: 'dispatch', drv: 'm1',
-    failFor: null, confirmDel: null, copyFor: null, photo: { files: [], review: null, busy: false },
+    failFor: null, confirmDel: null, copyFor: null, photo: { files: [], review: null, busy: false }, dadd: { open: false, sug: [], shop: '', addr: '', phone: '', items: '', code: '', open_t: '', close_t: '', lat: null, lng: null, pos: 'next' },
     matrix: null, matrixKey: '', routes: {}, gmapsReady: false, map: null, mapObjs: [], cDirty: {}, sDirty: {}, cRows: [], poll: null };
 
   // ---------- API ----------
@@ -121,9 +121,10 @@
     let p = '';
     if (s.kind === 'pickup') p += `<span class="pill pick">${isBack(s) ? '回程取貨' : '取貨'}</span>`;
     if (s.customer_code) p += `<span class="pill">${esc(s.customer_code)}</span>`;
-    if (s.pinned && s.veh) p += `<span class="pill" title="排車員指定，全自動排車不會換車">指定</span>`;
+    if (s.pinned && s.veh) p += `<span class="pill" title="指定這台車，全自動排車不會換車">指定</span>`;
+    if (s.source === 'driver') p += `<span class="pill urg">司機新增</span>`;
     if (hoursTxt(s)) p += `<span class="pill">營業 ${esc(hoursTxt(s))}</span>`;
-    if (s.lat == null) p += `<span class="pill fail">沒座標</span>`;
+    if (s.lat == null && S.me.canDispatch) p += `<span class="pill fail">沒座標</span>`;
     if (s.bulky) p += `<span class="pill">大件</span>`;
     if (s.urgent) p += `<span class="pill urg">急件</span>`;
     if (s.status === 'pending' && row) {
@@ -208,7 +209,10 @@
         </div>` : ''}
       </article>`;
     }).join('');
-    $('#board').innerHTML = (S.me.googleKey ? '<div id="map"></div>' : '') + cards;
+    const nts = S.stops.filter(s => s.notice);
+    const groups = {}; nts.forEach(s => { const k = s.notice; (groups[k] = groups[k] || []).push(s); });
+    const noticeBox = nts.length ? `<div class="notice" role="status"><b>司機回報</b><ul>${Object.entries(groups).map(([k, arr]) => `<li>${/改了順序$/.test(k) ? `${esc(k.replace(/ 改了順序$/, ''))} 臨時改了 ${esc([...new Set(arr.map(s => vName(s.veh)))].join('、'))} 的送貨順序（${arr.length} 站）` : `${esc(k)}：${arr.map(s => `${esc(s.shop)}（${esc(vName(s.veh))}${s.addr ? '・' + esc(s.addr) : ''}）`).join('、')}`}</li>`).join('')}</ul><button class="btn sm" data-act="ack">知道了</button></div>` : '';
+    $('#board').innerHTML = noticeBox + (S.me.googleKey ? '<div id="map"></div>' : '') + cards;
     if (S.gmapsReady) drawMap();
   }
   async function drawMap() {
@@ -580,6 +584,17 @@
         await api('/stops', { method: 'DELETE', body: { ids: pr && pr.status === 'pending' ? [id, pr.id] : [id] } }); await refresh();
       } else if (act === 'active') {
         const v = b.dataset.v; S.fleet.active[v] = S.fleet.active[v] === false; await api('/settings/fleet', { method: 'PUT', body: S.fleet }); render();
+      } else if (act === 'dmove') {
+        await driverMove(id, b.dataset.dir);
+      } else if (act === 'daddtoggle') {
+        e.preventDefault(); S.dadd.open = !S.dadd.open; renderDriver(true);
+      } else if (act === 'dasug') {
+        const c = S.dadd.sug[+b.dataset.i]; if (c) Object.assign(S.dadd, { code: c.code, shop: c.name, addr: c.addr, phone: c.phone || '', open_t: c.open || '', close_t: c.close || '', lat: c.lat, lng: c.lng, sug: [] }); renderDriver(true);
+      } else if (act === 'daddgo') {
+        await driverAdd(b);
+      } else if (act === 'ack') {
+        const ids = S.stops.filter(s => s.notice).map(s => ({ id: s.id, notice: '' }));
+        if (ids.length) await api('/stops', { method: 'PATCH', body: ids }); await refresh();
       } else if (act === 'optveh') {
         b.disabled = true; try { await orderVeh(b.dataset.v, '#a-msg'); } finally { b.disabled = false; }
       } else if (act === 'copy') {
@@ -794,7 +809,10 @@
   });
 
   // ---------- 司機 ----------
-  function renderDriver() {
+  function renderDriver(force) {
+    // 司機正在填「新增店家」時，自動更新不要把輸入框洗掉
+    const ae = document.activeElement;
+    if (!force && ae && ae.closest && ae.closest('.dadd') && $('#driver').contains(ae) && /INPUT|TEXTAREA/.test(ae.tagName)) return;
     const v = S.drv, list = vStops(v), pend = list.filter(s => s.status === 'pending'), pl = PLANS[v];
     const done = list.length - pend.length;
     const etaOf = s => s.eta || (pl.rows[s.id] ? '約 ' + fmtT(pl.rows[s.id].eta) : '');
@@ -827,9 +845,69 @@
     const lst = list.length > 1 || (list.length && !pend.length) ? `<div class="lbl">全部站點</div><ol class="stops dlist" style="--vc:var(--${v})">${list.map((s, i) => s === pend[0] ? '' : `
       <li class="stop${s.status !== 'pending' ? ' done' : ''}${s.kind === 'pickup' ? ' pickup' : ''}"><span class="seq">${i + 1}</span>
         <div><div class="shop">${esc(s.shop)}</div>${linkLine(s)}<div class="sub">${esc(s.addr)}</div><div class="pills">${stopPills(s, pl.rows[s.id])}</div></div>
-        <div class="ctl">${s.status !== 'pending' ? `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回</button>` : ''}</div></li>`).join('')}${pend.length ? retRow(v, pl) : ''}</ol>` : '';
-    $('#driver').innerHTML = chips + prog + main + lst;
+        <div class="ctl">${s.status !== 'pending' ? `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回</button>` : `<div class="mv">
+          <button class="icon" data-act="dmove" data-dir="up" data-id="${esc(s.id)}" aria-label="往前">↑</button>
+          <button class="icon" data-act="dmove" data-dir="down" data-id="${esc(s.id)}" ${pend.indexOf(s) >= pend.length - 1 ? 'disabled' : ''} aria-label="往後">↓</button></div>
+          <button class="btn sm" data-act="dmove" data-dir="next" data-id="${esc(s.id)}">改成下一站</button>`}</div></li>`).join('')}${pend.length ? retRow(v, pl) : ''}</ol>` : '';
+    const D = S.dadd;
+    const add = !list.length && !S.me.canDispatch && !VEH.includes(S.me.veh) ? '' : `<details class="panel dadd"${D.open ? ' open' : ''}><summary data-act="daddtoggle">＋ 新增店家（臨時要多送一家）</summary>
+      <label class="field"><span class="lbl">搜尋客戶（編號或店名，至少 2 個字）</span><input id="da-q" value="${esc(D.code || '')}" autocomplete="off" placeholder="例：FJ5 或 五洲"></label>
+      <div id="da-sug">${D.sug.map((c, i) => `<button type="button" class="btn sm" data-act="dasug" data-i="${i}" style="margin:4px 4px 0 0">${esc(c.code)} ${esc(c.name)}</button>`).join('')}</div>
+      <label class="field"><span class="lbl">店名</span><input data-da="shop" value="${esc(D.shop)}"></label>
+      <label class="field"><span class="lbl">地址</span><input data-da="addr" value="${esc(D.addr)}"></label>
+      <label class="field"><span class="lbl">電話</span><input data-da="phone" value="${esc(D.phone)}" inputmode="tel"></label>
+      <label class="field"><span class="lbl">送什麼／備註</span><input data-da="items" value="${esc(D.items)}"></label>
+      <div class="row"><label class="check"><input type="radio" name="da-pos" value="next" ${D.pos === 'next' ? 'checked' : ''}>排成下一站</label><label class="check"><input type="radio" name="da-pos" value="last" ${D.pos === 'last' ? 'checked' : ''}>排在最後</label></div>
+      <button class="btn primary" data-act="daddgo">新增</button>
+      <p class="hint">新增後排車台會收到通知。</p>
+    </details>`;
+    $('#driver').innerHTML = chips + prog + main + lst + add;
   }
+
+  // 司機臨時改順序：只動自己車上還沒送的站，先取貨的站一定要在送貨前面
+  async function driverMove(id, dir) {
+    const v = S.drv, pend = pendingOf(v).slice(), i = pend.findIndex(s => s.id === id); if (i < 0) return;
+    const [s] = pend.splice(i, 1);
+    const to = dir === 'next' ? 0 : dir === 'up' ? Math.max(0, i - 1) : Math.min(pend.length, i + 1);
+    pend.splice(to, 0, s);
+    const pos = {}; pend.forEach((x, k) => pos[x.id] = k);
+    const bad = pend.find(x => x.needs && pos[x.needs] != null && pos[x.needs] > pos[x.id]);
+    if (bad) { flash('#d-msg', `「${bad.shop}」的貨要先去 ${byId(bad.needs).shop} 拿，不能排在它前面。`, true); return; }
+    const base = vStops(v).length - pendingOf(v).length, list = [];
+    pend.forEach((x, k) => { const seq = base + k + 1; if (x.seq !== seq) list.push({ id: x.id, seq, eta: '' }); });
+    pend.forEach(x => { if (x.eta) list.some(p => p.id === x.id) || list.push({ id: x.id, eta: '' }); });
+    if (list.length) await api('/stops', { method: 'PATCH', body: list });
+    await refresh();
+  }
+  async function driverAdd(btn) {
+    const D = S.dadd, v = S.drv;
+    if (!D.shop.trim() || !D.addr.trim()) { flash('#d-msg', '請填店名和地址。', true); return; }
+    btn.disabled = true;
+    try {
+      const st = baseStop({ customer_code: normCode(D.code), shop: D.shop.trim(), addr: D.addr.trim(), phone: D.phone.trim(), items: D.items.trim(), open: normT(D.open_t), close: normT(D.close_t), lat: D.lat ?? null, lng: D.lng ?? null, veh: v, seq: 9999, pinned: true, source: 'driver' });
+      await api('/stops', { method: 'POST', body: [st] });
+      const pos = D.pos;
+      S.dadd = { open: false, sug: [], shop: '', addr: '', phone: '', items: '', code: '', open_t: '', close_t: '', lat: null, lng: null, pos: 'next' };
+      await refresh();
+      if (pos === 'next') await driverMove(st.id, 'next');
+      flash('#d-msg', `已新增「${st.shop}」${pos === 'next' ? '，排成下一站' : '，排在最後'}。排車台已收到通知。`);
+    } catch (e) { flash('#d-msg', e.message, true); }
+    finally { btn.disabled = false; }
+  }
+  let daTimer;
+  document.addEventListener('input', e => {
+    const el = e.target;
+    if (el.dataset && el.dataset.da) { S.dadd[el.dataset.da] = el.value; if (el.dataset.da === 'addr') { S.dadd.lat = null; S.dadd.lng = null; } return; }
+    if (el.id === 'da-q') {
+      S.dadd.code = el.value; clearTimeout(daTimer); const q = el.value.trim();
+      if (q.length < 2) { S.dadd.sug = []; $('#da-sug').innerHTML = ''; return; }
+      daTimer = setTimeout(async () => {
+        S.dadd.sug = await api('/customers?limit=8&q=' + encodeURIComponent(q)).catch(() => []);
+        $('#da-sug').innerHTML = S.dadd.sug.map((c, i) => `<button type="button" class="btn sm" data-act="dasug" data-i="${i}" style="margin:4px 4px 0 0">${esc(c.code)} ${esc(c.name)}</button>`).join('') || '<span class="sub">找不到，直接填下面的店名和地址</span>';
+      }, 300);
+    }
+  });
+  document.addEventListener('change', e => { if (e.target.name === 'da-pos') S.dadd.pos = e.target.value; });
 
   boot();
 })();
