@@ -121,6 +121,7 @@
     let p = '';
     if (s.kind === 'pickup') p += `<span class="pill pick">${isBack(s) ? '回程取貨' : '取貨'}</span>`;
     if (s.customer_code) p += `<span class="pill">${esc(s.customer_code)}</span>`;
+    if (s.pinned && s.veh) p += `<span class="pill" title="排車員指定，全自動排車不會換車">指定</span>`;
     if (hoursTxt(s)) p += `<span class="pill">營業 ${esc(hoursTxt(s))}</span>`;
     if (s.lat == null) p += `<span class="pill fail">沒座標</span>`;
     if (s.bulky) p += `<span class="pill">大件</span>`;
@@ -202,7 +203,7 @@
         ${pend.length ? `<div class="veh-f">
           <div class="lbl">Google 地圖導航（每段 4 站）</div>
           <div class="nav">${mapsSegments(v).map(g => `<a href="${esc(g.url)}" target="_blank" rel="noopener">${esc(g.label)}</a>`).join('')}</div>
-          <button class="btn" data-act="copy" data-v="${v}">複製路線傳 LINE</button>
+          <div class="row"><button class="btn" data-act="optveh" data-v="${v}">Google 重排這台順序</button><button class="btn" data-act="copy" data-v="${v}">複製路線傳 LINE</button></div>
           ${S.copyFor === v ? `<textarea class="copybox" readonly id="copy-${v}">${esc(lineText(v))}</textarea><p class="hint">自動複製失敗，請長按上面文字全選複製。</p>` : ''}
         </div>` : ''}
       </article>`;
@@ -301,6 +302,26 @@
     }
     if (patches.length) await api('/stops', { method: 'PATCH', body: patches });
   }
+  // 只排一台車的順序（車上的站已經決定好，不換車）
+  async function orderVeh(v, msgSel) {
+    try {
+      const noGeo = await ensureGeo(pendingOf(v), msgSel);
+      const mtx = await fetchMatrix(msgSel);
+      busy(msgSel, `計算 ${vName(v)} 的最佳順序…`);
+      await new Promise(r => setTimeout(r, 30));
+      const order = RC.optimizeVehicle(Object.assign(ctx(), { matrix: mtx }), v, S.stops, dayStart(), nowMin());
+      const base = vStops(v).filter(s => s.status !== 'pending').length, list = [];
+      order.forEach((s, i) => { const seq = base + i + 1; if (s.seq !== seq) { list.push({ id: s.id, seq, eta: '' }); s.seq = seq; s.eta = ''; } });
+      if (list.length) await api('/stops', { method: 'PATCH', body: list });
+      await fetchRoutes(msgSel);
+      await refresh();
+      const late = Object.values(PLANS[v].rows).filter(r => r.late > 0).length, parts = [];
+      if (!mtx) parts.push('沒有 Google 金鑰，用估算排的');
+      if (noGeo.length) parts.push(`${noGeo.length} 站地址轉不出座標`);
+      if (late) parts.push(`${late} 站可能趕不上打烊`);
+      flash(msgSel, `${vName(v)} 的路線排好了（${order.length} 站，預計 ${fmtT(PLANS[v].end)} 回倉）` + (parts.length ? '，但：' + parts.join('；') : '。接著按「複製路線傳 LINE」。'), parts.length > 0);
+    } catch (e) { flash(msgSel, '排路線失敗：' + e.message, true); }
+  }
   async function runAuto(btn) {
     btn.disabled = true;
     try {
@@ -335,7 +356,7 @@
 
   // ---------- 新增訂單 ----------
   function baseStop(o) {
-    return Object.assign({ id: newId(), date: S.date, kind: 'deliver', needs: '', customer_code: '', supplier_id: null, shop: '', phone: '', addr: '', lat: null, lng: null, open: '', close: '', items: '', bulky: false, urgent: false, veh: '', seq: 0, status: 'pending', note: '', done_at: '', source: 'manual' }, o);
+    return Object.assign({ id: newId(), date: S.date, kind: 'deliver', needs: '', customer_code: '', supplier_id: null, shop: '', phone: '', addr: '', lat: null, lng: null, open: '', close: '', items: '', bulky: false, urgent: false, veh: '', seq: 0, status: 'pending', note: '', done_at: '', source: 'manual', pinned: false }, o);
   }
   // order: {code, shop, phone, addr, lat, lng, open, close, items, bulky, urgent, pickup:{supplier_id?, name, addr, lat, lng, open, close, items}|null, source}
   async function addOrder(o) {
@@ -350,6 +371,13 @@
     list.push(baseStop({ customer_code: normCode(o.code), shop: o.shop, phone: o.phone || '', addr: o.addr, lat: o.lat ?? null, lng: o.lng ?? null, open: normT(o.open), close: normT(o.close), items: o.items || '', bulky: !!o.bulky, urgent: !!o.urgent, needs: pId, source: o.source || 'manual' }));
     }
     let placed = '';
+    if (o.veh && VEH.includes(o.veh)) {
+      let seq = Math.max(0, ...S.stops.filter(s => s.veh === o.veh).map(s => s.seq || 0));
+      list.forEach(x => { x.veh = o.veh; x.pinned = true; x.seq = ++seq; });
+      await api('/stops', { method: 'POST', body: list });
+      list.forEach(x => S.stops.push(x));
+      return 'added';
+    }
     if (o.urgent && S.stops.some(s => s.veh)) {
       const r = RC.insertUrgent(ctx(), list, S.stops, S.fleet.active, dayStart(), nowMin());
       if (r.veh) {
@@ -436,7 +464,8 @@
           ${x.back ? `<select data-rvbsup="${i}"><option value="">（選供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
           ${x.pickup && !x.back ? `<div class="lbl">先取貨</div><select data-rvsup="${i}"><option value="">（自填供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.pickup.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>${inp(i, 'name', '供應商', 1)}${inp(i, 'addr', '供應商地址', 1)}${inp(i, 'items', '要取的貨', 1)}${!x.pickup.addr ? '<div class="unsure">⚠ 供應商地址空白，請補上或選上面的供應商</div>' : ''}` : ''}
         </div></div></div>`).join('')}</div>
-      <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">加入勾選的 ${r.filter(x => x.on).length} 筆</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
+      <label class="field" style="margin-top:8px"><span class="lbl">交給哪位司機</span><select id="rv-veh"><option value="">自動分配（之後按「用 Google 排車」）</option>${VEH.map(v => `<option value="${v}"${S.photo.veh === v ? ' selected' : ''}>${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('')}</select></label>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">${S.photo.veh ? `加入 ${r.filter(x => x.on).length} 筆，請 Google 排 ${esc(vName(S.photo.veh))} 的路線` : `加入勾選的 ${r.filter(x => x.on).length} 筆`}</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
   }
   $('#p-review').addEventListener('input', e => {
     const el = e.target, r = S.photo.review; if (!r) return;
@@ -444,6 +473,7 @@
   });
   $('#p-review').addEventListener('change', e => {
     const el = e.target, r = S.photo.review; if (!r) return;
+    if (el.id === 'rv-veh') { S.photo.veh = el.value; renderReview(); return; }
     if (el.dataset.rvon != null) { r[+el.dataset.rvon].on = el.checked; renderReview(); }
     if (el.dataset.rvb != null) r[+el.dataset.rvb].bulky = el.checked;
     if (el.dataset.rvu != null) r[+el.dataset.rvu].urgent = el.checked;
@@ -458,10 +488,12 @@
     const items = (S.photo.review || []).filter(x => x.on && x.shop && x.addr);
     e.target.disabled = true; let n = 0; const urg = [];
     try {
-      for (const x of items) { const r = await addOrder(Object.assign({}, x, { pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
-      S.photo.review = null; S.photo.files = []; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
+      const veh = S.photo.veh || '';
+      for (const x of items) { const r = await addOrder(Object.assign({}, x, { veh, pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
+      S.photo.review = null; S.photo.files = []; S.photo.veh = ''; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
       await refresh();
-      flash('#p-msg', `已加入 ${n} 筆${urg.length ? '，急件已插進 ' + urg.join('、') : ''}。接著按「用 Google 排車」。`);
+      if (veh) { flash('#p-msg', `已加入 ${n} 筆給 ${vName(veh)}，Google 排路線中…`); await orderVeh(veh, '#p-msg'); }
+      else flash('#p-msg', `已加入 ${n} 筆${urg.length ? '，急件已插進 ' + urg.join('、') : ''}。接著按「用 Google 排車」。`);
     } catch (err) { flash('#p-msg', err.message, true); e.target.disabled = false; }
   });
 
@@ -548,6 +580,8 @@
         await api('/stops', { method: 'DELETE', body: { ids: pr && pr.status === 'pending' ? [id, pr.id] : [id] } }); await refresh();
       } else if (act === 'active') {
         const v = b.dataset.v; S.fleet.active[v] = S.fleet.active[v] === false; await api('/settings/fleet', { method: 'PUT', body: S.fleet }); render();
+      } else if (act === 'optveh') {
+        b.disabled = true; try { await orderVeh(b.dataset.v, '#a-msg'); } finally { b.disabled = false; }
       } else if (act === 'copy') {
         const v = b.dataset.v, txt = lineText(v);
         try { await navigator.clipboard.writeText(txt); S.copyFor = null; b.textContent = '已複製，貼到 LINE'; setTimeout(() => render(), 2000); }
@@ -568,8 +602,8 @@
     if (el.dataset.act === 'setveh') {
       const s = byId(el.dataset.id), pr = s && partnerOf(s), v = el.value;
       const seq = v ? Math.max(0, ...vStops(v).map(x => x.seq || 0)) + 1 : 0; const list = [];
-      if (pr && pr.status === 'pending' && pr.veh !== v) { const first = s.kind === 'pickup' ? s : pr, second = s.kind === 'pickup' ? pr : s; list.push({ id: first.id, veh: v, seq, eta: '' }, { id: second.id, veh: v, seq: v ? seq + 1 : 0, eta: '' }); }
-      else list.push({ id: s.id, veh: v, seq, eta: '' });
+      if (pr && pr.status === 'pending' && pr.veh !== v) { const first = s.kind === 'pickup' ? s : pr, second = s.kind === 'pickup' ? pr : s; list.push({ id: first.id, veh: v, seq, eta: '', pinned: !!v }, { id: second.id, veh: v, seq: v ? seq + 1 : 0, eta: '', pinned: !!v }); }
+      else list.push({ id: s.id, veh: v, seq, eta: '', pinned: !!v });
       await api('/stops', { method: 'PATCH', body: list }); S.routes = {}; await refresh();
     }
   });

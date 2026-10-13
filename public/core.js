@@ -174,6 +174,7 @@
         if (p && p.status === 'pending' && pending.includes(p)) grp = [p, s];
         else if (p && p.status !== 'pending') forced = p.veh || null;
       } else if (s.kind === 'pickup') { const d = pending.find(x => x.needs === s.id); if (d) grp = [s, d]; }
+      const pin = grp.find(x => x.pinned && x.veh); if (pin) forced = pin.veh; // 排車員指定的車，不換車
       grp.forEach(x => used.add(x.id));
       out.push({ stops: grp, bulky: grp.some(x => x.bulky), forced });
     }

@@ -63,6 +63,8 @@ async function migrate(env) {
     await env.DB.prepare('INSERT INTO users (name, pin_hash, role) VALUES (?,?,?)').bind('老闆', await pinHash(env, env.DISPATCH_PIN), 'owner').run();
     await env.DB.prepare('INSERT INTO users (name, pin_hash, role) VALUES (?,?,?)').bind('司機', await pinHash(env, env.DRIVER_PIN), 'driver').run();
   }
+  // 指定車輛：排車員手動指定的站，全自動排車不會換到別台車
+  try { await env.DB.exec('ALTER TABLE stops ADD COLUMN pinned INTEGER DEFAULT 0'); } catch (e) { /* 已存在 */ }
   migrated = true;
 }
 const pinHash = (env, pin) => hmac(env.SESSION_SECRET, 'pin:' + String(pin).trim());
@@ -190,11 +192,11 @@ async function api(req, env, url) {
     needDispatch();
     const list = await req.json();
     if (!Array.isArray(list) || !list.length) bad('沒有資料');
-    const stmt = db.prepare(`INSERT INTO stops (id,date,kind,needs,customer_code,supplier_id,shop,phone,addr,lat,lng,open,close,items,bulky,urgent,veh,seq,eta,leg_min,leg_km,status,note,done_at,source)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    const stmt = db.prepare(`INSERT INTO stops (id,date,kind,needs,customer_code,supplier_id,shop,phone,addr,lat,lng,open,close,items,bulky,urgent,veh,seq,eta,leg_min,leg_km,status,note,done_at,source,pinned)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
     await db.batch(list.map(x => {
       const o = normStop(x);
-      return stmt.bind(o.id, o.date, o.kind, o.needs, o.customer_code, o.supplier_id, o.shop, o.phone, o.addr, o.lat, o.lng, o.open, o.close, o.items, o.bulky, o.urgent, o.veh, o.seq, o.eta, o.leg_min, o.leg_km, o.status, o.note, o.done_at, o.source);
+      return stmt.bind(o.id, o.date, o.kind, o.needs, o.customer_code, o.supplier_id, o.shop, o.phone, o.addr, o.lat, o.lng, o.open, o.close, o.items, o.bulky, o.urgent, o.veh, o.seq, o.eta, o.leg_min, o.leg_km, o.status, o.note, o.done_at, o.source, o.pinned);
     }));
     return json({ ok: true, n: list.length });
   }
@@ -202,7 +204,7 @@ async function api(req, env, url) {
     const list = await req.json();
     if (!Array.isArray(list) || !list.length) bad('沒有資料');
     const allowed = isDispatch
-      ? ['kind', 'needs', 'customer_code', 'supplier_id', 'shop', 'phone', 'addr', 'lat', 'lng', 'open', 'close', 'items', 'bulky', 'urgent', 'veh', 'seq', 'eta', 'leg_min', 'leg_km', 'status', 'note', 'done_at']
+      ? ['kind', 'needs', 'customer_code', 'supplier_id', 'shop', 'phone', 'addr', 'lat', 'lng', 'open', 'close', 'items', 'bulky', 'urgent', 'veh', 'seq', 'eta', 'leg_min', 'leg_km', 'status', 'note', 'done_at', 'pinned']
       : ['status', 'note', 'done_at'];
     const stmts = [];
     for (const p of list) {
@@ -430,10 +432,10 @@ function normStop(x) {
     lat: x.lat ?? null, lng: x.lng ?? null, open: normTime(x.open), close: normTime(x.close), items: str(x.items),
     bulky: x.bulky ? 1 : 0, urgent: x.urgent ? 1 : 0, veh: VEH.includes(x.veh) ? x.veh : '', seq: +x.seq || 0,
     eta: str(x.eta), leg_min: x.leg_min ?? null, leg_km: x.leg_km ?? null,
-    status: ['pending', 'done', 'fail'].includes(x.status) ? x.status : 'pending', note: str(x.note), done_at: str(x.done_at), source: str(x.source)
+    status: ['pending', 'done', 'fail'].includes(x.status) ? x.status : 'pending', note: str(x.note), done_at: str(x.done_at), source: str(x.source), pinned: x.pinned && VEH.includes(x.veh) ? 1 : 0
   };
 }
-function rowToStop(r) { return { ...r, bulky: !!r.bulky, urgent: !!r.urgent }; }
+function rowToStop(r) { return { ...r, bulky: !!r.bulky, urgent: !!r.urgent, pinned: !!r.pinned }; }
 function parseJsonArray(text) {
   const tryParse = s => { try { const v = JSON.parse(s); return Array.isArray(v) ? v : (v && Array.isArray(v.orders) ? v.orders : null); } catch { return null; } };
   let v = tryParse(text); if (v) return v;
