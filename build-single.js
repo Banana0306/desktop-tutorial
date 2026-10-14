@@ -4,13 +4,17 @@ const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 const assets = {};
 for (const f of fs.readdirSync('public')) { const ext = path.extname(f); if (!types[ext]) continue; assets['/' + f] = { type: types[ext], body: fs.readFileSync(path.join('public', f), 'utf8') }; }
 let src = fs.readFileSync('src/worker.js', 'utf8');
+// 版本號：網頁每 30 秒會比對，舊版畫面會提示重新整理
+const BUILD = require('crypto').createHash('sha256').update(JSON.stringify(assets) + src).digest('hex').slice(0, 10);
+for (const k in assets) assets[k].body = assets[k].body.split('__BUILD__').join(BUILD);
+src = src.split('__BUILD__').join(BUILD);
 src = src.replace("return env.ASSETS.fetch(req);", "return serveAsset(url.pathname);");
 src += `
 // ---------- 內嵌靜態檔（由 build-single.js 產生） ----------
 const ASSETS = ${JSON.stringify(assets)};
 function serveAsset(p) {
   const a = ASSETS[p] || ASSETS['/index.html'];
-  const cache = p === '/' || p.endsWith('.html') || !ASSETS[p] ? 'no-cache' : 'public, max-age=300';
+  const cache = 'no-cache';
   return new Response(a.body, { headers: { 'content-type': a.type, 'cache-control': cache } });
 }
 `;

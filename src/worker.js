@@ -186,7 +186,7 @@ async function api(req, env, url) {
       isDispatch ? db.prepare('SELECT * FROM suppliers ORDER BY name').all() : { results: [] },
       isDispatch ? db.prepare('SELECT COUNT(*) n, SUM(lat IS NULL) nogeo, SUM(open<>\'\') hours FROM customers').first() : null
     ]);
-    return json({ date, stops: stops.results.map(rowToStop), fleet: JSON.parse(fleet.value), suppliers: sups.results, customers: cnt });
+    return json({ date, stops: stops.results.map(rowToStop), fleet: JSON.parse(fleet.value), suppliers: sups.results, customers: cnt, build: '__BUILD__' });
   }
 
   // ----- 站點 -----

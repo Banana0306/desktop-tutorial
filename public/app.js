@@ -59,8 +59,16 @@
     if (S.poll) clearInterval(S.poll);
     S.poll = setInterval(() => refresh().catch(() => { }), 30000);
   }
+  const BUILD = '__BUILD__';
   async function refresh() {
     const st = await api('/state?date=' + S.date);
+    // 伺服器已經更新版本，但這個畫面還是舊的 → 提示重新整理（沒在填資料時自動重新整理）
+    if (st.build && BUILD !== '__' + 'BUILD__' && st.build !== BUILD && !S.newBuild) {
+      S.newBuild = true;
+      const busyNow = (S.photo && S.photo.review) || (S.dadd && S.dadd.open) || document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+      if (!busyNow) { location.reload(); return; }
+      setBanner('', '排車台有新版本，請按重新整理（F5）或把網頁關掉再打開。');
+    }
     S.stops = st.stops; S.fleet = st.fleet; S.suppliers = st.suppliers || []; S.customers = st.customers;
     render();
   }
@@ -306,9 +314,22 @@
     }
     if (patches.length) await api('/stops', { method: 'PATCH', body: patches });
   }
+  // 換車後自動重排：連續換好幾站時，等停手 1.5 秒再一起排
+  const orderQueue = new Set(); let orderTimer;
+  function scheduleOrder(v) {
+    orderQueue.add(v); clearTimeout(orderTimer);
+    busy('#a-msg', `${vName(v)} 加了站，等一下自動用 Google 排最佳順序…`);
+    orderTimer = setTimeout(async () => { const vs = [...orderQueue]; orderQueue.clear(); for (const x of vs) await orderVeh(x, '#a-msg'); }, 1500);
+  }
+  // Google 地圖還在載入時先等它，最多 15 秒
+  async function waitGmaps() {
+    for (let i = 0; i < 30 && !S.gmapsReady && S.me.googleKey; i++) await new Promise(r => setTimeout(r, 500));
+    return S.gmapsReady;
+  }
   // 只排一台車的順序（車上的站已經決定好，不換車）
   async function orderVeh(v, msgSel) {
     try {
+      if (!(await waitGmaps())) { flash(msgSel, 'Google 地圖還沒載入，沒辦法排最佳路線。請重新整理網頁再按「Google 重排這台順序」。', true); return; }
       const noGeo = await ensureGeo(pendingOf(v), msgSel);
       const mtx = await fetchMatrix(msgSel);
       busy(msgSel, `計算 ${vName(v)} 的最佳順序…`);
@@ -620,6 +641,7 @@
       if (pr && pr.status === 'pending' && pr.veh !== v) { const first = s.kind === 'pickup' ? s : pr, second = s.kind === 'pickup' ? pr : s; list.push({ id: first.id, veh: v, seq, eta: '', pinned: !!v }, { id: second.id, veh: v, seq: v ? seq + 1 : 0, eta: '', pinned: !!v }); }
       else list.push({ id: s.id, veh: v, seq, eta: '', pinned: !!v });
       await api('/stops', { method: 'PATCH', body: list }); S.routes = {}; await refresh();
+      if (v) scheduleOrder(v, s.veh);
     }
   });
 
