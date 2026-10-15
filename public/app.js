@@ -69,7 +69,7 @@
       if (!busyNow) { location.reload(); return; }
       setBanner('', '排車台有新版本，請按重新整理（F5）或把網頁關掉再打開。');
     }
-    S.stops = st.stops; S.fleet = st.fleet; S.suppliers = st.suppliers || []; S.customers = st.customers;
+    S.stops = st.stops; S.fleet = st.fleet; S.drivers = st.drivers || {}; S.suppliers = st.suppliers || []; S.customers = st.customers;
     render();
   }
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; S.failFor = null; render(); });
@@ -80,7 +80,9 @@
   const pendingOf = v => vStops(v).filter(s => s.status === 'pending');
   const lastFixed = v => { const f = vStops(v).filter(s => s.status !== 'pending'); return f[f.length - 1] || null; };
   const lastDone = v => vStops(v).filter(s => s.done_at).sort((a, b) => a.done_at < b.done_at ? 1 : -1)[0] || null;
-  const vName = v => (S.fleet && S.fleet.names[v]) || KIND[v];
+  // 車輛顯示名稱：優先用指派的司機名字，其次用「設定」裡填的名字，最後才是汽車／機車 A／機車 B
+  const VLABEL = { car: '汽車', m1: '機車 A', m2: '機車 B' };
+  const vName = v => (S.drivers && S.drivers[v]) || (S.fleet && S.fleet.names[v] && !/^(汽車|機車\s*[AB]?)$/.test(S.fleet.names[v]) ? S.fleet.names[v] : '') || VLABEL[v] || KIND[v];
   const byId = id => S.stops.find(x => x.id === id);
   const partnerOf = s => s.needs ? byId(s.needs) : S.stops.find(x => x.needs === s.id);
   const dayStart = () => tmin(S.fleet && S.fleet.start) ?? 570;
@@ -192,7 +194,7 @@
       const kmTxt = R ? R.totalKm.toFixed(1) : pl.kmAll.toFixed(1);
       return `<article class="veh${on ? '' : ' off'}" style="--vc:var(--${v})">
         <div class="veh-h">
-          <div class="veh-name"><h3>${esc(vName(v))}</h3><span class="kind">${KIND[v]}${v === 'car' ? '・汽車路線' : '・機車路線'}</span>
+          <div class="veh-name"><h3>${esc(vName(v))}</h3><span class="kind">${VLABEL[v]}${v === 'car' ? '・汽車路線' : '・機車路線'}</span>
             <button class="toggle" data-act="active" data-v="${v}" aria-pressed="${on}">${on ? '今日出車' : '今日休'}</button></div>
           <div class="stats"><span><b class="num">${list.length}</b>站</span><span>${PLANS.est && !R ? '約' : ''} <b class="num">${kmTxt}</b>km</span>${pend.length ? `<span>回倉 <b class="num">${fmtT(pl.end)}</b></span>` : ''}</div>
           <div class="bar" aria-label="完成進度"><i style="width:${list.length ? done / list.length * 100 : 0}%"></i></div>

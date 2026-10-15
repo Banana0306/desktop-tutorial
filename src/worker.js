@@ -187,7 +187,10 @@ async function api(req, env, url) {
       isDispatch ? db.prepare('SELECT * FROM suppliers ORDER BY name').all() : { results: [] },
       isDispatch ? db.prepare('SELECT COUNT(*) n, SUM(lat IS NULL) nogeo, SUM(open<>\'\') hours FROM customers').first() : null
     ]);
-    return json({ date, stops: stops.results.map(rowToStop), fleet: JSON.parse(fleet.value), suppliers: sups.results, customers: cnt, build: '__BUILD__' });
+    // 每台車目前指派的司機名字（使用者頁設定的預設車輛），畫面上用名字取代「汽車／機車 A」
+    const drv = await db.prepare("SELECT name, veh FROM users WHERE active=1 AND role='driver' AND veh<>'' ORDER BY id").all();
+    const drivers = {}; drv.results.forEach(u => { drivers[u.veh] = drivers[u.veh] ? drivers[u.veh] + '、' + u.name : u.name; });
+    return json({ date, stops: stops.results.map(rowToStop), fleet: JSON.parse(fleet.value), suppliers: sups.results, customers: cnt, drivers, build: '__BUILD__' });
   }
 
   // ----- 站點 -----
