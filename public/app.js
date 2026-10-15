@@ -702,9 +702,12 @@
   async function readSheet(f) {
     const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', codepage: 950 });
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-    const hi = rows.findIndex(r => r.filter(x => String(x).trim()).length >= 2);
+    // ERP 報表前幾行常是公司名稱、製表日期 → 取前 10 行裡欄位最多的那一行當標題
+    const filled = r => r.filter(x => String(x).trim()).length;
+    let hi = -1, best = 1;
+    rows.slice(0, 10).forEach((r, i) => { if (filled(r) > best) { best = filled(r); hi = i; } });
     if (hi < 0) return null;
-    return { headers: rows[hi].map(x => String(x).trim()), data: rows.slice(hi + 1).filter(r => r.some(x => String(x).trim())) };
+    return { headers: rows[hi].map(x => String(x).replace(/\s+/g, '')), data: rows.slice(hi + 1).filter(r => filled(r) >= 2).map(r => r.map(x => typeof x === 'string' ? x.trim() : x)) };
   }
   function mappingUI(kind, box, sheet, onImport) {
     const fields = FIELDS[kind];
