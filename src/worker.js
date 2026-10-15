@@ -67,6 +67,7 @@ async function migrate(env) {
   try { await env.DB.exec('ALTER TABLE stops ADD COLUMN pinned INTEGER DEFAULT 0'); } catch (e) { /* 已存在 */ }
   // 司機新增店家／改順序 → 排車台要看到提示，排車員按「知道了」清掉
   try { await env.DB.exec("ALTER TABLE stops ADD COLUMN notice TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
+  try { await env.DB.exec("ALTER TABLE suppliers ADD COLUMN code TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
   migrated = true;
 }
 const pinHash = (env, pin) => hmac(env.SESSION_SECRET, 'pin:' + String(pin).trim());
@@ -345,10 +346,14 @@ async function api(req, env, url) {
     if (!Array.isArray(rows)) bad('格式錯誤');
     let n = 0, upd = 0;
     for (const r of rows) {
-      const name = str(r.name), addr = str(r.addr);
+      const name = str(r.name), addr = str(r.addr), code = str(r.code);
       if (!name) continue;
-      const ex = await db.prepare('SELECT id, addr FROM suppliers WHERE name=?').bind(name).first();
+      // 先用廠商代號找（也修正以前把代號存成名稱的資料），再用名稱找
+      let ex = null;
+      if (code) ex = await db.prepare('SELECT id, addr FROM suppliers WHERE code=? OR (name=? AND (code IS NULL OR code=\'\')) ORDER BY id LIMIT 1').bind(code, code).first();
+      if (!ex) ex = await db.prepare('SELECT id, addr FROM suppliers WHERE name=?').bind(name).first();
       if (ex) {
+        await db.prepare('UPDATE suppliers SET name=?, code=CASE WHEN ?<>\'\' THEN ? ELSE code END WHERE id=?').bind(name, code, code, ex.id).run();
         const sameAddr = !addr || ex.addr === addr;
         await db.prepare(`UPDATE suppliers SET phone=CASE WHEN ?<>'' THEN ? ELSE phone END, addr=CASE WHEN ?<>'' THEN ? ELSE addr END,
           lat=CASE WHEN ? THEN lat ELSE NULL END, lng=CASE WHEN ? THEN lng ELSE NULL END,
@@ -358,8 +363,8 @@ async function api(req, env, url) {
         upd++;
       } else {
         if (!addr) continue;
-        await db.prepare('INSERT INTO suppliers (name,phone,addr,open,close,closed_days,note) VALUES (?,?,?,?,?,?,?)')
-          .bind(name, str(r.phone), addr, normTime(r.open), normTime(r.close), str(r.closed_days), str(r.note)).run();
+        await db.prepare('INSERT INTO suppliers (name,code,phone,addr,open,close,closed_days,note) VALUES (?,?,?,?,?,?,?,?)')
+          .bind(name, code, str(r.phone), addr, normTime(r.open), normTime(r.close), str(r.closed_days), str(r.note)).run();
         n++;
       }
     }

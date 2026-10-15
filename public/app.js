@@ -697,7 +697,7 @@
   // 匯入（客戶／供應商共用）
   const FIELDS = {
     cust: [['code', '客戶編號', ['客戶編號', '編號', '客戶代號', '代號', 'code', 'CODE'], true], ['name', '客戶名稱', ['客戶名稱', '名稱', '簡稱', '店名', 'name'], true], ['phone', '電話', ['電話', 'TEL', 'tel', '聯絡']], ['addr', '地址', ['地址', '送貨地址', 'ADDR', 'addr']], ['open', '開門', ['開門', '開店', '營業開始', '開始']], ['close', '打烊', ['打烊', '關店', '營業結束', '結束']], ['closed_days', '公休', ['公休', '休息']], ['note', '備註', ['備註', '說明']]],
-    sup: [['name', '供應商名稱', ['供應商', '廠商', '名稱', '簡稱', 'name'], true], ['addr', '地址', ['地址', '取貨地址', 'ADDR', 'addr'], true], ['phone', '電話', ['電話', 'TEL', 'tel', '聯絡']], ['open', '開門', ['開門', '開店', '營業開始', '開始']], ['close', '打烊', ['打烊', '關店', '營業結束', '結束']], ['closed_days', '公休', ['公休', '休息']], ['note', '備註', ['備註', '說明']]]
+    sup: [['name', '供應商名稱', ['廠商名稱', '供應商名稱', '廠商簡稱', '名稱', '簡稱', '供應商', '廠商', 'name'], true], ['code', '廠商代號', ['廠商代號', '廠商編號', '代號', '編號', '代碼']], ['addr', '地址', ['地址', '取貨地址', 'ADDR', 'addr'], true], ['phone', '電話', ['電話', 'TEL', 'tel', '聯絡']], ['open', '開門', ['開門', '開店', '營業開始', '開始']], ['close', '打烊', ['打烊', '關店', '營業結束', '結束']], ['closed_days', '公休', ['公休', '休息']], ['note', '備註', ['備註', '說明']]]
   };
   async function readSheet(f) {
     const wb = XLSX.read(await f.arrayBuffer(), { type: 'array', codepage: 950 });
@@ -708,8 +708,15 @@
   }
   function mappingUI(kind, box, sheet, onImport) {
     const fields = FIELDS[kind];
-    const guess = words => { const i = sheet.headers.findIndex(h => words.some(w => h.includes(w))); return i >= 0 ? i : ''; };
-    box.innerHTML = `<p class="hint">讀到 ${sheet.data.length} 筆。請確認欄位對應：</p><div class="mapping">${fields.map(([k, label, words, req]) => `<label class="field"><span class="lbl">${label}${req ? '（必填）' : ''}</span><select data-map="${k}"><option value="">（不匯入）</option>${sheet.headers.map((h, i) => `<option value="${i}" ${guess(words) === i ? 'selected' : ''}>${esc(h || '欄 ' + (i + 1))}</option>`).join('')}</select></label>`).join('')}</div>
+    // 依關鍵字優先順序找欄位；名稱類欄位不要選到「代號／編號」欄
+    const guess = (words, k) => {
+      const hs = sheet.headers.map(h => String(h || '').trim());
+      const okFor = h => k === 'code' || !/代號|編號|代碼|ID|id/.test(h);
+      for (const w of words) { const i = hs.findIndex(h => h === w); if (i >= 0) return i; }
+      for (const w of words) { const i = hs.findIndex(h => h.includes(w) && okFor(h)); if (i >= 0) return i; }
+      return '';
+    };
+    box.innerHTML = `<p class="hint">讀到 ${sheet.data.length} 筆。請確認欄位對應：</p><div class="mapping">${fields.map(([k, label, words, req]) => `<label class="field"><span class="lbl">${label}${req ? '（必填）' : ''}</span><select data-map="${k}"><option value="">（不匯入）</option>${sheet.headers.map((h, i) => `<option value="${i}" ${guess(words, k) === i ? 'selected' : ''}>${esc(h || '欄 ' + (i + 1))}</option>`).join('')}</select></label>`).join('')}</div>
       <button class="btn primary" style="margin-top:8px">匯入 ${sheet.data.length} 筆</button>`;
     box.querySelector('button').addEventListener('click', () => {
       const map = {}; box.querySelectorAll('[data-map]').forEach(s => { if (s.value !== '') map[s.dataset.map] = +s.value; });
@@ -749,8 +756,8 @@
   // ---------- 供應商 ----------
   function renderSuppliers() {
     $('#s-kpi').innerHTML = `<span><b>${S.suppliers.length}</b> 家供應商</span>`;
-    $('#s-table').innerHTML = `<thead><tr><th>名稱</th><th>電話</th><th>地址</th><th>座標</th><th>開門</th><th>打烊</th><th>公休</th><th></th></tr></thead><tbody>${S.suppliers.map(s => `<tr>
-      <td><input data-s="${s.id}" data-k="name" value="${esc(s.name)}" style="width:130px"></td><td><input data-s="${s.id}" data-k="phone" value="${esc(s.phone)}" style="width:110px"></td>
+    $('#s-table').innerHTML = `<thead><tr><th>代號</th><th>名稱</th><th>電話</th><th>地址</th><th>座標</th><th>開門</th><th>打烊</th><th>公休</th><th></th></tr></thead><tbody>${S.suppliers.map(s => `<tr>
+      <td class="sub">${esc(s.code || '')}</td><td><input data-s="${s.id}" data-k="name" value="${esc(s.name)}" style="width:130px"></td><td><input data-s="${s.id}" data-k="phone" value="${esc(s.phone)}" style="width:110px"></td>
       <td><input class="w" data-s="${s.id}" data-k="addr" value="${esc(s.addr)}"></td>
       <td>${s.lat != null ? '<span class="geo-ok">✓</span>' : `<button class="btn sm" data-act="geo1" data-kind="sup" data-id="${s.id}">補</button>`}</td>
       <td><input class="t" type="time" data-s="${s.id}" data-k="open" value="${esc(s.open)}"></td><td><input class="t" type="time" data-s="${s.id}" data-k="close" value="${esc(s.close)}"></td>
