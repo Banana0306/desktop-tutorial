@@ -51,8 +51,8 @@ function cookieHeader(token, maxAge) {
 
 // ---------- 使用者 ----------
 // 角色：owner（老闆，最高權限）> dispatch（排車員）> driver（司機）
-const ROLES = ['owner', 'dispatch', 'driver'];
-const ROLE_NAME = { owner: '老闆', dispatch: '排車員', driver: '司機' };
+const ROLES = ['owner', 'dispatch', 'driver', 'sales'];
+const ROLE_NAME = { owner: '老闆', dispatch: '排車員', driver: '司機', sales: '業務' };
 let migrated = false;
 async function migrate(env) {
   if (migrated) return;
@@ -181,7 +181,8 @@ async function api(req, env, url) {
     const date = url.searchParams.get('date') || today();
     const [stops, fleet, sups, cnt] = await Promise.all([
       // 司機只拿得到自己那台車的站；沒設定車輛的司機什麼都看不到
-      isDispatch ? db.prepare('SELECT * FROM stops WHERE date=? ORDER BY veh, seq').bind(date).all()
+      // 業務：可以查全部站的配送狀況，但不能改（寫入都要排車員權限）
+      isDispatch || s.role === 'sales' ? db.prepare('SELECT * FROM stops WHERE date=? ORDER BY veh, seq').bind(date).all()
         : db.prepare('SELECT * FROM stops WHERE date=? AND veh=? AND veh<>\'\' ORDER BY seq').bind(date, me.veh || '').all(),
       db.prepare("SELECT value FROM settings WHERE key='fleet'").first(),
       isDispatch ? db.prepare('SELECT * FROM suppliers ORDER BY name').all() : { results: [] },

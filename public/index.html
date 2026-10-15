@@ -207,6 +207,16 @@
     <p class="hint" style="margin-top:8px">改角色、車輛、停用會立刻生效；重設 PIN 填新號碼後按「重設」。停用的人下次操作就會被登出。</p>
   </main>
 
+  <!-- 查詢配送（業務／排車員） -->
+  <main id="view-track" hidden>
+    <section class="panel track">
+      <h2>查詢配送</h2>
+      <label class="field"><span class="lbl">店名、客戶代號或電話</span><input id="t-q" type="search" placeholder="例：五洲、FJ5、2672" autocomplete="off"></label>
+      <p class="hint">查的是上面「日期」那天的配送單。預計時間會依司機目前進度隨時更新。</p>
+      <div id="t-res"></div>
+    </section>
+  </main>
+
   <!-- 司機 -->
   <main id="view-driver" hidden><div class="drv" id="driver"></div></main>
 </div>

@@ -188,3 +188,12 @@ table.data .dirty{border-color:var(--warn)}
 .notice .btn{justify-self:start}
 .dadd{margin-top:14px}
 .dadd summary{font-weight:700;cursor:pointer}
+
+.track{max-width:640px}
+.trk{border:1px solid var(--line);border-left:5px solid var(--vc);border-radius:10px;padding:12px 14px;margin-top:10px;display:grid;gap:4px;background:var(--surface)}
+.trk-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.trk-h .shop{font-weight:900;font-size:17px}
+.trk-s{font-size:16px}
+.trk.ok .trk-s{color:var(--ok)}
+.trk.fail .trk-s{color:#B3261E}
+.trk.wait .trk-s{color:var(--muted)}

@@ -49,8 +49,9 @@
     S.me = me;
     $('#view-login').hidden = true; $('#top').hidden = false;
     $('#who').textContent = (me.name ? me.name + '・' : '') + (me.roleName || '');
-    const tabs = me.canDispatch ? [['dispatch', '排車'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : []) : [['driver', '我的路線'], ['settings', '設定']];
-    S.view = me.canDispatch ? 'dispatch' : 'driver';
+    const tabs = me.canDispatch ? [['dispatch', '排車'], ['track', '查詢配送'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : [])
+      : me.role === 'sales' ? [['track', '查詢配送'], ['settings', '設定']] : [['driver', '我的路線'], ['settings', '設定']];
+    S.view = me.canDispatch ? 'dispatch' : me.role === 'sales' ? 'track' : 'driver';
     if (me.veh && VEH.includes(me.veh)) S.drv = me.veh;
     $('#tabs').innerHTML = tabs.map(([v, n]) => `<button role="tab" data-view="${v}" aria-selected="${v === S.view}">${n}</button>`).join('');
     $('#date').value = S.date;
@@ -109,6 +110,7 @@
     document.querySelectorAll('#tabs [data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === S.view));
     if (S.view === 'dispatch') { renderBanner(); renderUnassigned(); renderBoard(); renderSupSelect(); if (document.activeElement !== $('#s-start')) $('#s-start').value = S.fleet.start || '09:30'; $('#r-radius').textContent = S.fleet.motoRadiusKm || 10; }
     else if (S.view === 'driver') renderDriver();
+    else if (S.view === 'track') renderTrack();
     else if (S.view === 'customers') { if (S.renderedView !== 'customers') loadCustomers(); }
     else if (S.view === 'suppliers') { if (S.renderedView !== 'suppliers' || !Object.keys(S.sDirty).length) renderSuppliers(); }
     else if (S.view === 'settings') { if (S.renderedView !== 'settings') renderSettings(); }
@@ -803,7 +805,7 @@
   });
 
   // ---------- 使用者（老闆） ----------
-  const ROLE_OPTS = [['owner', '老闆'], ['dispatch', '排車員'], ['driver', '司機']];
+  const ROLE_OPTS = [['owner', '老闆'], ['dispatch', '排車員'], ['driver', '司機'], ['sales', '業務']];
   async function loadUsers() {
     const users = await api('/users').catch(e => { flash('#u-msg', e.message, true); return []; });
     $('#u-table').innerHTML = `<thead><tr><th>名字</th><th>角色</th><th>預設車輛</th><th>狀態</th><th>最後登入</th><th>重設 PIN</th><th></th></tr></thead><tbody>${users.map(u => `<tr data-uid="${u.id}">
@@ -947,6 +949,40 @@
     }
   });
   document.addEventListener('change', e => { if (e.target.name === 'da-pos') S.dadd.pos = e.target.value; });
+
+  // ---------- 查詢配送：輸入店名／代號／電話 → 哪位司機送、前面還有幾站、預計幾點到 ----------
+  function renderTrack() {
+    const q = ($('#t-q').value || '').trim();
+    if (!q) { $('#t-res').innerHTML = `<p class="sub">今天共 ${S.stops.filter(s => s.kind !== 'pickup').length} 家要送。輸入店名、代號或電話開始查。</p>`; return; }
+    const nq = q.replace(/[\s\-]/g, '').toUpperCase(), digits = q.replace(/\D/g, '');
+    const hit = S.stops.filter(s => s.kind !== 'pickup' && (
+      String(s.shop || '').replace(/\s/g, '').toUpperCase().includes(nq) ||
+      (s.customer_code && normCode(s.customer_code).includes(nq)) ||
+      (digits.length >= 4 && String(s.phone || '').replace(/\D/g, '').includes(digits))));
+    if (!hit.length) { $('#t-res').innerHTML = `<p class="sub">${mmdd(S.date)} 沒有找到「${esc(q)}」的配送單。</p>`; return; }
+    const now = nowMin();
+    $('#t-res').innerHTML = hit.map(s => {
+      const v = s.veh, pl = v ? PLANS[v] : null, row = pl && pl.rows[s.id];
+      let state, cls = '';
+      if (s.status === 'done') { state = `已送達 <b class="num">${esc(hhmm(s.done_at))}</b>`; cls = 'ok'; }
+      else if (s.status === 'fail') { state = `沒送成：${esc(s.note || '原因未填')}`; cls = 'fail'; }
+      else if (!v) { state = '還沒排車'; cls = 'wait'; }
+      else {
+        const pend = pendingOf(v), ahead = pend.indexOf(s);
+        // 有 Google 時間就用；司機進度落後時改用依目前時間重算的估計
+        const est = row ? fmtT(row.eta) : '', eta = s.eta && est && est > s.eta ? est : (s.eta || est);
+        state = `預計 <b class="num">${esc(eta || '—')}</b> 到${ahead > 0 ? `・前面還有 ${ahead} 站` : ahead === 0 ? '・<b>下一站就是這家</b>' : ''}`;
+      }
+      const ld = v && lastDone(v);
+      return `<article class="trk ${cls}" style="--vc:var(--${v || 'muted'})">
+        <div class="trk-h"><span class="shop">${esc(s.shop)}</span>${s.customer_code ? `<span class="pill">${esc(s.customer_code)}</span>` : ''}${s.urgent ? '<span class="pill urg">急件</span>' : ''}</div>
+        <div class="trk-s">${state}</div>
+        ${v ? `<div class="sub">司機：<b>${esc(vName(v))}</b>（${VLABEL[v]}）${ld ? `・最後回報 ${esc(hhmm(ld.done_at))} ${esc(ld.shop)}` : '・還沒出發或還沒回報'}</div>` : ''}
+        ${s.items ? `<div class="sub">${esc(s.items)}</div>` : ''}
+      </article>`;
+    }).join('');
+  }
+  document.addEventListener('input', e => { if (e.target.id === 't-q') renderTrack(); });
 
   boot();
 })();
