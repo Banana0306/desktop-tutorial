@@ -853,11 +853,13 @@
     if (!S.me.canDispatch && !VEH.includes(S.me.veh)) { $('#driver').innerHTML = `<div class="empty">老闆還沒幫你設定車輛，暫時看不到路線。請找老闆在「使用者」幫你選車。</div>`; return; }
     const chips = !S.me.canDispatch ? '' : `<div class="chips" role="group" aria-label="選擇車輛">${VEH.map(x => `<button class="chip" style="--vc:var(--${x})" data-act="drv" data-v="${x}" aria-pressed="${x === v}">${esc(vName(x))}</button>`).join('')}</div>`;
     const prog = `<div style="--vc:var(--${v});display:grid;gap:6px"><div class="row"><span class="num" style="font-size:20px;font-weight:600">${done}/${list.length}</span><span class="sub">站完成</span>${pend.length ? `<span class="endt">預計 ${fmtT(pl.end)} 回倉</span>` : ''}</div><div class="bar"><i style="width:${list.length ? done / list.length * 100 : 0}%"></i></div></div>`;
+    // 司機只看還沒送的站（送完的只留在排車台），編號從下一站重新算
+    const shown = S.me.canDispatch ? list : pend;
     let main;
     if (!list.length) main = `<div class="empty">${mmdd(S.date)} 還沒有排到 ${esc(vName(v))} 的路線。</div>`;
     else if (!pend.length) main = `<div class="alldone">全部完成，辛苦了！回倉庫路上注意安全。</div><div class="acts" style="--vc:var(--${v})"><a class="navbtn" href="${esc(mapsDir('', S.me.warehouse.addr, [], v))}" target="_blank" rel="noopener">開 Google 地圖導航回倉庫</a></div>`;
     else {
-      const n = pend[0], idx = list.indexOf(n) + 1, r = pl.rows[n.id], pr = partnerOf(n), pick = n.kind === 'pickup';
+      const n = pend[0], idx = shown.indexOf(n) + 1, r = pl.rows[n.id], pr = partnerOf(n), pick = n.kind === 'pickup';
       const nav = mapsDir('', n.addr, [], v);
       main = `<article class="next" style="--vc:var(--${v})">
         <div class="eyebrow">下一站・第 ${idx} 站${pick ? (pr ? '・供應商取貨' : '・回程取貨') : ''}${n.urgent ? '・急件' : ''}・${esc(etaOf(n))} 到</div>
@@ -876,7 +878,7 @@
         <p class="msg" id="d-msg"></p>
       </article>`;
     }
-    const lst = list.length > 1 || (list.length && !pend.length) ? `<div class="lbl">全部站點</div><ol class="stops dlist" style="--vc:var(--${v})">${list.map((s, i) => s === pend[0] ? '' : `
+    const lst = shown.length > 1 || (S.me.canDispatch && list.length && !pend.length) ? `<div class="lbl">${S.me.canDispatch ? '全部站點' : '接下來的站'}</div><ol class="stops dlist" style="--vc:var(--${v})">${shown.map((s, i) => s === pend[0] ? '' : `
       <li class="stop${s.status !== 'pending' ? ' done' : ''}${s.kind === 'pickup' ? ' pickup' : ''}"><span class="seq">${i + 1}</span>
         <div><div class="shop">${esc(s.shop)}</div>${linkLine(s)}<div class="sub">${esc(s.addr)}</div><div class="pills">${stopPills(s, pl.rows[s.id])}</div></div>
         <div class="ctl">${s.status !== 'pending' ? `<button class="btn sm" data-act="undo" data-id="${esc(s.id)}">改回</button>` : `<div class="mv">
@@ -895,7 +897,10 @@
       <button class="btn primary" data-act="daddgo">新增</button>
       <p class="hint">新增後排車台會收到通知。</p>
     </details>`;
-    $('#driver').innerHTML = chips + prog + main + lst + add;
+    // 按錯「已送達」的補救：最近 10 分鐘內回報的那一站可以改回
+    const ld = !S.me.canDispatch && lastDone(v);
+    const undo = ld && ld.done_at && Date.now() - new Date(ld.done_at).getTime() < 10 * 60e3 ? `<div class="row sub" style="margin-top:8px">剛回報：${esc(ld.shop)}（${ld.status === 'fail' ? '未完成' : '已完成'}）<button class="btn sm" data-act="undo" data-id="${esc(ld.id)}">按錯了，改回</button></div>` : '';
+    $('#driver').innerHTML = chips + prog + main + undo + lst + add;
   }
 
   // 司機臨時改順序：只動自己車上還沒送的站，先取貨的站一定要在送貨前面

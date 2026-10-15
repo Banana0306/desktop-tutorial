@@ -228,7 +228,7 @@ async function api(req, env, url) {
         // 司機改順序 → 標記給排車台看（司機新增的店維持「新增」提示）
         const mark = keys.includes('seq') ? ", notice=CASE WHEN notice LIKE '%新增' THEN notice ELSE ? END" : '';
         const extra = mark ? [me.name + ' 改了順序'] : [];
-        stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}${mark}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>'' AND status='pending'`).bind(...vals, ...extra, p.id, me.veh || ''));
+        stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}${mark}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>''${mark ? " AND status='pending'" : ''}`).bind(...vals, ...extra, p.id, me.veh || ''));
       }
     }
     if (stmts.length) await db.batch(stmts);
