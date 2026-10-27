@@ -280,6 +280,16 @@
     const nm = nowMin(); if (nm != null && nm > st) dep = new Date();
     return dep;
   }
+  // Google 車程表失敗（例如帳單停用）時，不要整個排車失敗：改用直線距離估算照樣排出最順的順序
+  async function safeMatrix(msgSel) {
+    try { return await fetchMatrix(msgSel); }
+    catch (e) {
+      console.warn(e);
+      const billing = /billing|帳單/i.test(String(e && e.message));
+      setBanner('bad', billing ? 'Google 路線服務停用了（Google Cloud 帳單未啟用），目前用直線距離估算排順序，時間會比較不準。請老闆到 Google Cloud 升級帳單帳戶。' : 'Google 車程表暫時取不到，這次用直線距離估算排順序：' + String(e && e.message || e).slice(0, 80));
+      S.gFail = true; return null;
+    }
+  }
   async function fetchMatrix(msgSel) {
     const c = ctx();
     if (c.matrix) return c.matrix;
@@ -335,7 +345,7 @@
     try {
       if (!(await waitGmaps())) { flash(msgSel, 'Google 地圖還沒載入，沒辦法排最佳路線。請重新整理網頁再按「Google 重排這台順序」。', true); return; }
       const noGeo = await ensureGeo(pendingOf(v), msgSel);
-      const mtx = await fetchMatrix(msgSel);
+      const mtx = await safeMatrix(msgSel);
       busy(msgSel, `計算 ${vName(v)} 的最佳順序…`);
       await new Promise(r => setTimeout(r, 30));
       const order = RC.optimizeVehicle(Object.assign(ctx(), { matrix: mtx }), v, S.stops, dayStart(), nowMin());
@@ -356,7 +366,7 @@
     try {
       const noGeo = await ensureGeo(S.stops.filter(s => s.status === 'pending'), '#a-msg');
       const skip = new Set(S.stops.filter(s => s.status === 'pending' && isClosedToday(s)).map(s => s.id));
-      const mtx = await fetchMatrix('#a-msg');
+      const mtx = await safeMatrix('#a-msg');
       busy('#a-msg', '計算分車與順序…');
       await new Promise(r => setTimeout(r, 30));
       const a = RC.autoAssign(Object.assign(ctx(), { matrix: mtx }), S.stops, S.fleet.active, dayStart(), nowMin(), skip);
