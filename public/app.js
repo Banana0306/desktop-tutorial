@@ -49,7 +49,7 @@
     S.me = me;
     $('#view-login').hidden = true; $('#top').hidden = false;
     $('#who').textContent = (me.name ? me.name + '・' : '') + (me.roleName || '');
-    const tabs = me.canDispatch ? [['dispatch', '排車'], ['track', '查詢配送'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : [])
+    const tabs = me.canDispatch ? [['dispatch', '排車'], ['track', '查詢配送'], ['history', '送貨紀錄'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : [])
       : me.role === 'sales' ? [['track', '查詢配送'], ['settings', '設定']] : [['driver', '我的路線'], ['settings', '設定']];
     S.view = me.canDispatch ? 'dispatch' : me.role === 'sales' ? 'track' : 'driver';
     if (me.veh && VEH.includes(me.veh)) S.drv = me.veh;
@@ -111,6 +111,7 @@
     if (S.view === 'dispatch') { renderBanner(); renderUnassigned(); renderBoard(); renderSupSelect(); if (document.activeElement !== $('#s-start')) $('#s-start').value = S.fleet.start || '09:30'; $('#r-radius').textContent = S.fleet.motoRadiusKm || 10; }
     else if (S.view === 'driver') renderDriver();
     else if (S.view === 'track') renderTrack();
+    else if (S.view === 'history') { if (S.renderedView !== 'history') initHistory(); }
     else if (S.view === 'customers') { if (S.renderedView !== 'customers') loadCustomers(); }
     else if (S.view === 'suppliers') { if (S.renderedView !== 'suppliers' || !Object.keys(S.sDirty).length) renderSuppliers(); }
     else if (S.view === 'settings') { if (S.renderedView !== 'settings') renderSettings(); }
@@ -993,6 +994,65 @@
     }).join('');
   }
   document.addEventListener('input', e => { if (e.target.id === 't-q') renderTrack(); });
+
+  // ---------- 送貨紀錄 / 司機 KPI ----------
+  const VL = { car: '汽車', m1: '機車 A', m2: '機車 B' };
+  const hm = m => { m = Math.round(m || 0); return Math.floor(m / 60) + ' 小時 ' + (m % 60) + ' 分'; };
+  function downloadCsv(name, rows) {
+    const csv = '\ufeff' + rows.map(r => r.map(x => { const v = String(x ?? ''); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(',')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  function initHistory() {
+    S.renderedView = 'history';
+    if (!$('#k-month').value) $('#k-month').value = today().slice(0, 7);
+    if (!$('#h-from').value) { $('#h-from').value = today(); $('#h-to').value = today(); }
+    loadKpi(); loadHistory();
+  }
+  async function loadKpi() {
+    busy('#k-msg', '計算中…');
+    try {
+      const k = S.kpi = await api('/kpi?month=' + $('#k-month').value);
+      $('#k-table').innerHTML = k.summary.length ? `<thead><tr><th>司機</th><th>出車天數</th><th>送達間數</th><th>回程取貨</th><th>沒送成</th><th>總公里</th><th>總時間</th><th>平均每站</th></tr></thead><tbody>${k.summary.map(d => `<tr><td><b>${esc(d.driver)}</b></td><td class="num">${d.days}</td><td class="num"><b>${d.delivered}</b></td><td class="num">${d.pickups}</td><td class="num">${d.failed}</td><td class="num">${d.km} km</td><td class="num">${hm(d.minutes)}</td><td class="num">${d.perStopMin} 分</td></tr>`).join('')}</tbody>` : '';
+      $('#k-daily').innerHTML = k.daily.length ? `<thead><tr><th>日期</th><th>司機</th><th>車</th><th>送達</th><th>取貨</th><th>沒送成</th><th>公里</th><th>時間</th></tr></thead><tbody>${k.daily.map(d => `<tr><td>${esc(d.date)}</td><td>${esc(d.driver)}</td><td>${VL[d.veh] || ''}</td><td class="num">${d.delivered}</td><td class="num">${d.pickups}</td><td class="num">${d.failed}</td><td class="num">${d.km}</td><td class="num">${hm(d.minutes)}</td></tr>`).join('')}</tbody>` : '';
+      flash('#k-msg', k.summary.length ? `${k.month} 共 ${k.summary.reduce((a, d) => a + d.delivered, 0)} 間送達。` : `${k.month} 還沒有送貨紀錄。`);
+    } catch (e) { flash('#k-msg', e.message, true); }
+  }
+  async function loadHistory() {
+    const from = $('#h-from').value, to = $('#h-to').value || from;
+    if (!from) return; if (to < from) { flash('#h-msg', '「到」不能早於「從」。', true); return; }
+    busy('#h-msg', '查詢中…');
+    try {
+      const rows = S.hist = await api(`/history?from=${from}&to=${to}`);
+      const drvs = [...new Set(rows.map(r => r.driver).filter(Boolean))].sort(), cur = $('#h-drv').value;
+      $('#h-drv').innerHTML = '<option value="">全部</option>' + drvs.map(d => `<option${d === cur ? ' selected' : ''}>${esc(d)}</option>`).join('');
+      renderHistory();
+    } catch (e) { flash('#h-msg', e.message, true); }
+  }
+  function histRows() {
+    const d = $('#h-drv').value, q = ($('#h-q').value || '').replace(/\s/g, '').toUpperCase();
+    return (S.hist || []).filter(r => (!d || r.driver === d) && (!q || String(r.shop).replace(/\s/g, '').toUpperCase().includes(q) || normCode(r.customer_code).includes(q)));
+  }
+  const ST = r => r.status === 'done' ? (r.kind === 'pickup' ? '已取貨' : '已送達') : r.status === 'fail' ? '沒送成' + (r.note ? '：' + r.note : '') : '未完成';
+  function renderHistory() {
+    const rows = histRows();
+    $('#h-table').innerHTML = rows.length ? `<thead><tr><th>日期</th><th>司機</th><th>車</th><th>代號</th><th>客戶</th><th>狀態</th><th>回報時間</th><th>貨物</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.date)}</td><td>${esc(r.driver || '—')}</td><td>${VL[r.veh] || ''}</td><td>${esc(r.customer_code || '')}</td><td>${esc(r.shop)}${r.kind === 'pickup' ? ' <span class="pill pick">取貨</span>' : ''}</td><td>${esc(ST(r))}</td><td class="num">${esc(hhmm(r.done_at))}</td><td class="sub">${esc(r.items || '')}</td></tr>`).join('')}</tbody>` : '';
+    const n = rows.filter(r => r.status === 'done' && r.kind !== 'pickup').length;
+    flash('#h-msg', rows.length ? `共 ${rows.length} 筆，送達 ${n} 間。` : '這段期間沒有紀錄。');
+  }
+  $('#k-go').addEventListener('click', loadKpi);
+  $('#k-month').addEventListener('change', loadKpi);
+  $('#h-go').addEventListener('click', loadHistory);
+  $('#h-drv').addEventListener('change', renderHistory);
+  $('#h-q').addEventListener('input', renderHistory);
+  $('#k-csv').addEventListener('click', () => {
+    const k = S.kpi; if (!k) return;
+    downloadCsv(`司機KPI_${k.month}.csv`, [['月份', '司機', '出車天數', '送達間數', '回程取貨', '沒送成', '總公里', '總時間(分)', '平均每站(分)']].concat(k.summary.map(d => [k.month, d.driver, d.days, d.delivered, d.pickups, d.failed, d.km, d.minutes, d.perStopMin]))
+      .concat([[], ['日期', '司機', '車', '送達', '取貨', '沒送成', '公里', '時間(分)']]).concat(k.daily.map(d => [d.date, d.driver, VL[d.veh] || '', d.delivered, d.pickups, d.failed, d.km, d.minutes])));
+  });
+  $('#h-csv').addEventListener('click', () => {
+    const rows = histRows(); if (!rows.length) return;
+    downloadCsv(`送貨紀錄_${$('#h-from').value}_${$('#h-to').value}.csv`, [['日期', '司機', '車', '客戶代號', '客戶', '狀態', '回報時間', '貨物', '地址']].concat(rows.map(r => [r.date, r.driver, VL[r.veh] || '', r.customer_code, r.shop, ST(r), hhmm(r.done_at), r.items, r.addr])));
+  });
 
   boot();
 })();

@@ -68,6 +68,12 @@ async function migrate(env) {
   // 司機新增店家／改順序 → 排車台要看到提示，排車員按「知道了」清掉
   try { await env.DB.exec("ALTER TABLE stops ADD COLUMN notice TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
   try { await env.DB.exec("ALTER TABLE suppliers ADD COLUMN code TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
+  // 送貨紀錄：記下實際送的司機名字（之後換人開同一台車，舊紀錄不會跑掉）
+  try { await env.DB.exec("ALTER TABLE stops ADD COLUMN driver TEXT DEFAULT ''"); } catch (e) { /* 已存在 */ }
+  await env.DB.prepare(`UPDATE stops SET driver=COALESCE((SELECT name FROM users WHERE role='driver' AND active=1 AND users.veh=stops.veh ORDER BY id LIMIT 1),'')
+    WHERE (driver IS NULL OR driver='') AND status IN ('done','fail') AND veh<>''`).run();
+  // 紀錄保留兩年
+  await env.DB.prepare("DELETE FROM stops WHERE date < date('now','-2 years')").run();
   migrated = true;
 }
 const pinHash = (env, pin) => hmac(env.SESSION_SECRET, 'pin:' + String(pin).trim());
@@ -232,6 +238,13 @@ async function api(req, env, url) {
         stmts.push(db.prepare(`UPDATE stops SET ${keys.map(k => k + '=?').join(',')}${mark}, updated_at=datetime('now') WHERE id=? AND veh=? AND veh<>''${mark ? " AND status='pending'" : ''}`).bind(...vals, ...extra, p.id, me.veh || ''));
       }
     }
+    // 回報送達／沒送成時記下是哪位司機；改回未完成就清掉
+    for (const p of list) {
+      if (p.status === 'done' || p.status === 'fail') {
+        if (!isDispatch) stmts.push(db.prepare("UPDATE stops SET driver=? WHERE id=? AND veh=?").bind(me.name, p.id, me.veh || ''));
+        else stmts.push(db.prepare(`UPDATE stops SET driver=COALESCE(NULLIF(driver,''),(SELECT name FROM users WHERE role='driver' AND active=1 AND users.veh=stops.veh ORDER BY id LIMIT 1),'') WHERE id=?`).bind(p.id));
+      } else if (p.status === 'pending') stmts.push(isDispatch ? db.prepare("UPDATE stops SET driver='' WHERE id=?").bind(p.id) : db.prepare("UPDATE stops SET driver='' WHERE id=? AND veh=?").bind(p.id, me.veh || ''));
+    }
     if (stmts.length) await db.batch(stmts);
     return json({ ok: true, n: stmts.length });
   }
@@ -241,6 +254,24 @@ async function api(req, env, url) {
     if (!Array.isArray(ids) || !ids.length) bad('沒有 id');
     await db.batch(ids.map(id => db.prepare('DELETE FROM stops WHERE id=?').bind(id)));
     return json({ ok: true });
+  }
+
+  // ----- 送貨紀錄與 KPI（老闆／排車員） -----
+  if (path === '/history' && method === 'GET') {
+    needDispatch();
+    const from = url.searchParams.get('from') || today(), to = url.searchParams.get('to') || from;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) bad('日期格式不對');
+    const r = await db.prepare(`SELECT date, veh, driver, kind, customer_code, shop, addr, items, status, note, done_at, source FROM stops
+      WHERE date BETWEEN ? AND ? AND (status IN ('done','fail') OR veh<>'') ORDER BY date DESC, veh, seq LIMIT 5000`).bind(from, to).all();
+    return json(r.results);
+  }
+  if (path === '/kpi' && method === 'GET') {
+    needDispatch();
+    const month = url.searchParams.get('month') || today().slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(month)) bad('月份格式不對');
+    const r = await db.prepare(`SELECT date, veh, driver, kind, status, lat, lng, leg_km, leg_min, done_at FROM stops
+      WHERE date LIKE ? AND status IN ('done','fail') AND veh<>'' ORDER BY date, done_at`).bind(month + '-%').all();
+    return json({ month, ...kpiOf(r.results, { lat: +env.WAREHOUSE_LAT, lng: +env.WAREHOUSE_LNG }) });
   }
 
   // ----- 客戶 -----
@@ -494,4 +525,29 @@ items 請寫成「品名 規格 ×數量」用頓號分隔，並在最後加上�
 已知供應商（名稱｜地址）：
 ${supTxt}
 ${note ? '排車員補充：' + note + '\n' : ''}只回 JSON 陣列，不要其他文字。`;
+}
+
+// ---------- 司機 KPI：每位司機每天依回報時間排序，算出跑的公里數與出車時間 ----------
+function kpiOf(rows, W) {
+  const hav = (a, b) => { const R = 6371, r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+  const SPEED = { car: 25, m1: 22, m2: 22 };           // 沒有 Google 車程時用的平均時速（km/h）
+  const leg = (a, b, v) => { if (a.lat == null || b.lat == null) return { km: 4, min: 12 }; const km = Math.max(hav(a, b) * 1.3, 0.5); return { km, min: km / (SPEED[v] || 22) * 60 }; };
+  const days = {};
+  for (const s of rows) { const who = s.driver || ('（' + ({ car: '汽車', m1: '機車 A', m2: '機車 B' }[s.veh] || s.veh) + '）'); const k = who + '|' + s.date; (days[k] = days[k] || { who, date: s.date, veh: s.veh, list: [] }).list.push(s); }
+  const drivers = {}, daily = [];
+  for (const d of Object.values(days)) {
+    const list = d.list.filter(s => s.done_at).sort((a, b) => a.done_at < b.done_at ? -1 : 1);
+    let km = 0, p = W, firstLegMin = 0;
+    list.forEach((s, i) => { const L = s.leg_km > 0 ? { km: +s.leg_km, min: +s.leg_min || leg(p, s, d.veh).min } : leg(p, s, d.veh); km += L.km; if (i === 0) firstLegMin = L.min; if (s.lat != null) p = s; });
+    const back = list.length ? leg(p, W, d.veh) : { km: 0, min: 0 }; km += back.km;
+    let min = 0;
+    if (list.length) { const t0 = new Date(list[0].done_at).getTime() - firstLegMin * 60e3, t1 = new Date(list[list.length - 1].done_at).getTime() + back.min * 60e3; min = Math.max(0, (t1 - t0) / 60e3); }
+    const delivered = d.list.filter(s => s.status === 'done' && s.kind !== 'pickup').length, pickups = d.list.filter(s => s.status === 'done' && s.kind === 'pickup').length, failed = d.list.filter(s => s.status === 'fail').length;
+    daily.push({ driver: d.who, date: d.date, veh: d.veh, delivered, pickups, failed, km: +km.toFixed(1), minutes: Math.round(min) });
+    const D = drivers[d.who] = drivers[d.who] || { driver: d.who, days: 0, delivered: 0, pickups: 0, failed: 0, km: 0, minutes: 0 };
+    D.days++; D.delivered += delivered; D.pickups += pickups; D.failed += failed; D.km += km; D.minutes += min;
+  }
+  const summary = Object.values(drivers).map(D => ({ ...D, km: +D.km.toFixed(1), minutes: Math.round(D.minutes), perStopMin: D.delivered + D.pickups + D.failed ? +(D.minutes / (D.delivered + D.pickups + D.failed)).toFixed(1) : 0 })).sort((a, b) => b.delivered - a.delivered);
+  daily.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.driver < b.driver ? -1 : 1);
+  return { summary, daily };
 }

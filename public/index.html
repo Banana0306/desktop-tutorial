@@ -207,6 +207,35 @@
     <p class="hint" style="margin-top:8px">改角色、車輛、停用會立刻生效；重設 PIN 填新號碼後按「重設」。停用的人下次操作就會被登出。</p>
   </main>
 
+  <!-- 送貨紀錄與司機 KPI（老闆／排車員） -->
+  <main id="view-history" hidden>
+    <section class="panel" style="margin-bottom:14px">
+      <h2>司機 KPI（每月）</h2>
+      <div class="row">
+        <label class="field t"><span class="lbl">月份</span><input type="month" id="k-month"></label>
+        <button class="btn primary" id="k-go" style="align-self:end">查詢</button>
+        <button class="btn" id="k-csv" style="align-self:end">下載 Excel（CSV）</button>
+      </div>
+      <p class="msg" id="k-msg" role="status"></p>
+      <div class="tablewrap"><table class="data" id="k-table"></table></div>
+      <details style="margin-top:10px"><summary>每天明細</summary><div class="tablewrap"><table class="data" id="k-daily"></table></div></details>
+      <p class="hint">公里數依當天實際送達順序計算（倉庫出發 → 各站 → 回倉）；有 Google 車程就用 Google 的，沒有就用直線距離 ×1.3 估算。總時間＝第一站出發到回倉，依回報時間推算。紀錄保留兩年。</p>
+    </section>
+    <section class="panel">
+      <h2>每日送貨紀錄</h2>
+      <div class="row">
+        <label class="field t"><span class="lbl">從</span><input type="date" id="h-from"></label>
+        <label class="field t"><span class="lbl">到</span><input type="date" id="h-to"></label>
+        <label class="field t"><span class="lbl">司機</span><select id="h-drv"><option value="">全部</option></select></label>
+        <label class="field t"><span class="lbl">客戶（店名或代號）</span><input id="h-q" type="search"></label>
+        <button class="btn primary" id="h-go" style="align-self:end">查詢</button>
+        <button class="btn" id="h-csv" style="align-self:end">下載 Excel（CSV）</button>
+      </div>
+      <p class="msg" id="h-msg" role="status"></p>
+      <div class="tablewrap"><table class="data" id="h-table"></table></div>
+    </section>
+  </main>
+
   <!-- 查詢配送（業務／排車員） -->
   <main id="view-track" hidden>
     <section class="panel track">
