@@ -3,7 +3,7 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const { VEH, MODE, tmin, fmtT } = RC;
-  const KIND = { car: '汽車', m1: '機車', m2: '機車' };
+  const KIND = { car: '汽車', m1: '機車', m2: '機車', m3: '機車', lala: 'LaLa 快遞' };
   const WEEK = '日一二三四五六';
   const fmtDur = m => { m = Math.round(m); return m >= 60 ? Math.floor(m / 60) + ' 小時 ' + (m % 60) + ' 分' : m + ' 分'; };
   const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
@@ -81,9 +81,9 @@
   const pendingOf = v => vStops(v).filter(s => s.status === 'pending');
   const lastFixed = v => { const f = vStops(v).filter(s => s.status !== 'pending'); return f[f.length - 1] || null; };
   const lastDone = v => vStops(v).filter(s => s.done_at).sort((a, b) => a.done_at < b.done_at ? 1 : -1)[0] || null;
-  // 車輛顯示名稱：優先用指派的司機名字，其次用「設定」裡填的名字，最後才是汽車／機車 A／機車 B
-  const VLABEL = { car: '汽車', m1: '機車 A', m2: '機車 B' };
-  const vName = v => (S.drivers && S.drivers[v]) || (S.fleet && S.fleet.names[v] && !/^(汽車|機車\s*[AB]?)$/.test(S.fleet.names[v]) ? S.fleet.names[v] : '') || VLABEL[v] || KIND[v];
+  // 車輛顯示名稱：優先用指派的司機名字，其次用「設定」裡填的名字，最後才是汽車／機車 A／B／C／LaLa 快遞
+  const VLABEL = { car: '汽車', m1: '機車 A', m2: '機車 B', m3: '機車 C', lala: 'LaLa 快遞' };
+  const vName = v => (S.drivers && S.drivers[v]) || (S.fleet && S.fleet.names[v] && !/^(汽車|機車\s*[ABC]?|LaLa\s*快遞)$/i.test(S.fleet.names[v]) ? S.fleet.names[v] : '') || VLABEL[v] || KIND[v];
   const byId = id => S.stops.find(x => x.id === id);
   const partnerOf = s => s.needs ? byId(s.needs) : S.stops.find(x => x.needs === s.id);
   const dayStart = () => tmin(S.fleet && S.fleet.start) ?? 570;
@@ -96,7 +96,7 @@
     Object.keys(off).forEach(d => { if (d < lim) delete off[d]; });
     const cur = new Set(off[S.date] || []); on ? cur.delete(v) : cur.add(v);
     if (cur.size) off[S.date] = [...cur]; else delete off[S.date];
-    S.fleet.off = off; S.fleet.active = { car: true, m1: true, m2: true };
+    S.fleet.off = off; S.fleet.active = Object.fromEntries(VEH.map(x => [x, true]));
     await api('/settings/fleet', { method: 'PUT', body: S.fleet });
   }
   const nowMin = () => { if (S.date !== today()) return null; const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
@@ -108,7 +108,7 @@
     const sorted = S.stops.slice().sort((a, b) => a.id < b.id ? -1 : 1);
     const index = new Map(); sorted.forEach((s, i) => index.set(s.id, i + 1));
     const key = S.date + '|' + sorted.map(s => s.id + ':' + s.lat + ',' + s.lng).join(';');
-    return { warehouse: S.me.warehouse, matrix: S.matrixKey === key ? S.matrix : null, index, perStop: { car: per.car, m1: per.m1 ?? per.moto, m2: per.m2 ?? per.moto }, motoRadiusKm: f.motoRadiusKm || 10, key };
+    return { warehouse: S.me.warehouse, matrix: S.matrixKey === key ? S.matrix : null, index, perStop: { car: per.car, m1: per.m1 ?? per.moto, m2: per.m2 ?? per.moto, m3: per.m3 ?? per.m1 ?? per.moto, lala: per.lala ?? per.car }, motoRadiusKm: f.motoRadiusKm || 10, key };
   }
   let PLANS = {};
   function computePlans() { const c = ctx(); PLANS = {}; VEH.forEach(v => PLANS[v] = RC.planOf(c, v, vStops(v), dayStart(), nowMin())); PLANS.est = !c.matrix; }
@@ -246,7 +246,7 @@
     const { Marker } = await google.maps.importLibrary('marker');
     if (!S.map || S.map.getDiv() !== el) S.map = new GMap(el, { center: S.me.warehouse, zoom: 12, mapTypeControl: false, streetViewControl: false, fullscreenControl: true });
     S.mapObjs.forEach(o => o.setMap(null)); S.mapObjs = [];
-    const col = { car: '#2B5A8C', m1: '#1C8468', m2: '#B25E17', '': '#888' };
+    const col = { car: '#2B5A8C', m1: '#1C8468', m2: '#B25E17', m3: '#7A4FA8', lala: '#D9822B', '': '#888' };
     const bounds = new google.maps.LatLngBounds(); bounds.extend(S.me.warehouse);
     S.mapObjs.push(new Marker({ map: S.map, position: S.me.warehouse, title: '倉庫', label: { text: '倉', color: '#fff', fontWeight: '700' }, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 12, fillColor: '#16211E', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 } }));
     for (const v of VEH.concat([''])) {
@@ -490,7 +490,7 @@
   }
   function renderModeVeh() {
     const sel = $('#p-veh'); if (!sel) return;
-    sel.innerHTML = VEH.map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）${isOn(v) ? '' : '・今天設成休，選了會改成出車'}</option>`).join('');
+    sel.innerHTML = VEH.map(v => `<option value="${v}">${esc(vName(v))}${vName(v) === VLABEL[v] ? '' : '（' + VLABEL[v] + '）'}${isOn(v) ? '' : '・今天設成休，選了會改成出車'}</option>`).join('');
     const m = document.querySelector('[name=p-mode]:checked').value;
     sel.hidden = m !== 'veh';
     if (m === 'veh' && !S.photo.veh) S.photo.veh = sel.value;
@@ -542,7 +542,7 @@
           ${x.back ? `<select data-rvbsup="${i}"><option value="">（選供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
           ${x.pickup && !x.back ? `<div class="lbl">先取貨</div><select data-rvsup="${i}"><option value="">（自填供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.pickup.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>${inp(i, 'name', '供應商', 1)}${inp(i, 'addr', '供應商地址', 1)}${inp(i, 'items', '要取的貨', 1)}${!x.pickup.addr ? '<div class="unsure">⚠ 供應商地址空白，請補上或選上面的供應商</div>' : ''}` : ''}
         </div></div></div>`).join('')}</div>
-      <label class="field" style="margin-top:8px"><span class="lbl">交給哪位司機</span><select id="rv-veh"><option value="">全部由系統分配</option>${VEH.map(v => `<option value="${v}"${S.photo.veh === v ? ' selected' : ''}>${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('')}</select></label>
+      <label class="field" style="margin-top:8px"><span class="lbl">交給哪位司機</span><select id="rv-veh"><option value="">全部由系統分配</option>${VEH.map(v => `<option value="${v}"${S.photo.veh === v ? ' selected' : ''}>${esc(vName(v))}${vName(v) === VLABEL[v] ? '' : '（' + VLABEL[v] + '）'}</option>`).join('')}</select></label>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">${S.photo.veh ? `加入 ${r.filter(x => x.on).length} 筆，請 Google 排 ${esc(vName(S.photo.veh))} 的路線` : `加入 ${r.filter(x => x.on).length} 筆，由系統分配並排路線`}</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
   }
   $('#p-review').addEventListener('input', e => {
@@ -836,7 +836,7 @@
 
   // ---------- 設定 ----------
   function renderSettings() {
-    const f = S.fleet; VEH.forEach(v => { $('#n-' + v).value = f.names[v] || ''; });
+    const f = S.fleet; f.names = f.names || {}; VEH.forEach(v => { $('#n-' + v).value = f.names[v] || ''; });
     document.querySelector('#view-settings .panel').hidden = !S.me.canDispatch;
     const per = f.perStop || {}; $('#ps-car').value = per.car ?? 8; $('#ps-moto').value = per.m1 ?? per.moto ?? 5; $('#ps-radius').value = f.motoRadiusKm ?? 10;
     $('#set-status').innerHTML = `<div>Google 地圖金鑰：${S.me.googleKey ? '<span class="geo-ok">已設定</span>' + (S.gmapsReady ? '，已載入' : '，載入中或失敗') : '<span class="geo-no">未設定</span>'}</div>
@@ -844,8 +844,8 @@
       <div>倉庫：${esc(S.me.warehouse.addr)}</div><div>這個網址：${esc(location.origin)}（給司機登入用）</div>`;
   }
   $('#set-save').addEventListener('click', async () => {
-    const f = S.fleet; VEH.forEach(v => { f.names[v] = $('#n-' + v).value.trim() || KIND[v]; });
-    const moto = +$('#ps-moto').value || 5; f.perStop = { car: +$('#ps-car').value || 8, m1: moto, m2: moto }; f.motoRadiusKm = +$('#ps-radius').value || 10;
+    const f = S.fleet; VEH.forEach(v => { f.names[v] = $('#n-' + v).value.trim() || VLABEL[v]; });
+    const moto = +$('#ps-moto').value || 5; f.perStop = { car: +$('#ps-car').value || 8, m1: moto, m2: moto, m3: moto, lala: +$('#ps-car').value || 8 }; f.motoRadiusKm = +$('#ps-radius').value || 10;
     try { await api('/settings/fleet', { method: 'PUT', body: f }); flash('#set-msg', '已儲存。'); } catch (e) { flash('#set-msg', e.message, true); }
   });
 
@@ -1035,7 +1035,7 @@
   document.addEventListener('input', e => { if (e.target.id === 't-q') renderTrack(); });
 
   // ---------- 送貨紀錄 / 司機 KPI ----------
-  const VL = { car: '汽車', m1: '機車 A', m2: '機車 B' };
+  const VL = VLABEL;
   const hm = m => { m = Math.round(m || 0); return Math.floor(m / 60) + ' 小時 ' + (m % 60) + ' 分'; };
   function downloadCsv(name, rows) {
     const csv = '\ufeff' + rows.map(r => r.map(x => { const v = String(x ?? ''); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(',')).join('\r\n');

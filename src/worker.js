@@ -1,7 +1,7 @@
 // 瑞城排車台 — Cloudflare Worker 後端
 // 職責：PIN 登入、D1 資料存取、照片辨識（代呼叫 Anthropic，金鑰不落地到瀏覽器）
 
-const VEH = ['car', 'm1', 'm2'];
+const VEH = ['car', 'm1', 'm2', 'm3', 'lala'];
 const COOKIE = 'rc_session';
 const DAY = 86400;
 
@@ -530,10 +530,10 @@ ${note ? '排車員補充：' + note + '\n' : ''}只回 JSON 陣列，不要其�
 // ---------- 司機 KPI：每位司機每天依回報時間排序，算出跑的公里數與出車時間 ----------
 function kpiOf(rows, W) {
   const hav = (a, b) => { const R = 6371, r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r; const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
-  const SPEED = { car: 25, m1: 22, m2: 22 };           // 沒有 Google 車程時用的平均時速（km/h）
+  const SPEED = { car: 25, m1: 22, m2: 22, m3: 22, lala: 25 };           // 沒有 Google 車程時用的平均時速（km/h）
   const leg = (a, b, v) => { if (a.lat == null || b.lat == null) return { km: 4, min: 12 }; const km = Math.max(hav(a, b) * 1.3, 0.5); return { km, min: km / (SPEED[v] || 22) * 60 }; };
   const days = {};
-  for (const s of rows) { const who = s.driver || ('（' + ({ car: '汽車', m1: '機車 A', m2: '機車 B' }[s.veh] || s.veh) + '）'); const k = who + '|' + s.date; (days[k] = days[k] || { who, date: s.date, veh: s.veh, list: [] }).list.push(s); }
+  for (const s of rows) { const who = s.driver || ('（' + ({ car: '汽車', m1: '機車 A', m2: '機車 B', m3: '機車 C', lala: 'LaLa 快遞' }[s.veh] || s.veh) + '）'); const k = who + '|' + s.date; (days[k] = days[k] || { who, date: s.date, veh: s.veh, list: [] }).list.push(s); }
   const drivers = {}, daily = [];
   for (const d of Object.values(days)) {
     const list = d.list.filter(s => s.done_at).sort((a, b) => a.done_at < b.done_at ? -1 : 1);

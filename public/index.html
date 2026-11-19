@@ -106,7 +106,8 @@
           <ul class="rules">
             <li>從公司（板橋光榮巷）出發，由近到遠，再取時間最快的順序</li>
             <li>大件（輪胎、整箱機油）只給汽車；其他站看放哪台車最省時間</li>
-            <li>站會在車與車之間反覆調換，直到三台車都盡早回倉、工作量平均</li>
+            <li>站會在車與車之間反覆調換，直到每台車都盡早回倉、工作量平均</li>
+            <li>LaLa 快遞不會被系統自動分配，要在拍照時「指定司機」選 LaLa，或用「換車」改過去</li>
             <li>機車盡量不跑超過 <span id="r-radius">10</span> km（會算入成本，但不是硬規定）</li>
             <li>汽車用 Google 汽車路線＋路況，機車用 Google 機車路線</li>
             <li>調貨：供應商取貨站排在該客戶前面，同一台車</li>
@@ -120,7 +121,7 @@
           <div id="unassigned"></div>
         </section>
       </aside>
-      <section class="board" id="board" aria-label="三台車今日路線"></section>
+      <section class="board" id="board" aria-label="各車今日路線"></section>
     </div>
   </main>
 
@@ -177,6 +178,8 @@
       <label class="field"><span class="lbl">汽車司機</span><input id="n-car"></label>
       <label class="field"><span class="lbl">機車 A 司機</span><input id="n-m1"></label>
       <label class="field"><span class="lbl">機車 B 司機</span><input id="n-m2"></label>
+      <label class="field"><span class="lbl">機車 C 司機</span><input id="n-m3"></label>
+      <label class="field"><span class="lbl">LaLa 快遞（顯示名稱）</span><input id="n-lala" placeholder="LaLa 快遞"></label>
       <div class="row">
         <label class="field t"><span class="lbl">汽車每站停留（分）</span><input type="number" id="ps-car" min="1" max="60"></label>
         <label class="field t"><span class="lbl">機車每站停留（分）</span><input type="number" id="ps-moto" min="1" max="60"></label>
@@ -203,8 +206,8 @@
       <div class="row">
         <label class="field t"><span class="lbl">名字</span><input id="u-name" placeholder="例：阿明"></label>
         <label class="field t"><span class="lbl">PIN（4–8 位數字）</span><input id="u-pin" inputmode="numeric" placeholder="例：246810"></label>
-        <label class="field t"><span class="lbl">角色</span><select id="u-role"><option value="driver">司機</option><option value="dispatch">排車員</option><option value="owner">老闆</option></select></label>
-        <label class="field t"><span class="lbl">預設車輛（司機用）</span><select id="u-veh"><option value="">不指定</option><option value="car">汽車</option><option value="m1">機車 A</option><option value="m2">機車 B</option></select></label>
+        <label class="field t"><span class="lbl">角色</span><select id="u-role"><option value="driver">司機</option><option value="dispatch">排車員</option><option value="sales">業務</option><option value="owner">老闆</option></select></label>
+        <label class="field t"><span class="lbl">預設車輛（司機用）</span><select id="u-veh"><option value="">不指定</option><option value="car">汽車</option><option value="m1">機車 A</option><option value="m2">機車 B</option><option value="m3">機車 C</option><option value="lala">LaLa 快遞</option></select></label>
       </div>
       <div class="row"><button class="btn primary" id="u-add">新增</button><p class="msg" id="u-msg" role="status"></p></div>
       <ul class="rules">

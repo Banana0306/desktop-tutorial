@@ -1,8 +1,9 @@
 // 排車核心 v3：以成本分車 + 車與車之間互換 + 平衡回倉時間 + 每台車精確排序
 // 車程來源：Google 車程表（汽車 DRIVING / 機車 TWO_WHEELER）；沒有時退回直線估算。
 (function (g) {
-  const VEH = ['car', 'm1', 'm2'];
-  const MODE = { car: 'car', m1: 'moto', m2: 'moto' };
+  const VEH = ['car', 'm1', 'm2', 'm3', 'lala'];
+  const MODE = { car: 'car', m1: 'moto', m2: 'moto', m3: 'moto', lala: 'car' };
+  const AUTO = ['car', 'm1', 'm2', 'm3'];          // 系統自動分配會用的車；LaLa 快遞要指定才會派
   const EST_SPEED = { car: 22, moto: 26 };
 
   // 目標函數權重（分鐘為單位）
@@ -185,7 +186,7 @@
   function eligible(u, active) {
     if (u.forced) return active[u.forced] ? [u.forced] : [];
     if (u.bulky) return active.car ? ['car'] : [];
-    return VEH.filter(v => active[v]);
+    return AUTO.filter(v => active[v]);
   }
 
   // ---------- 整體解 ----------
@@ -329,5 +330,5 @@
     const all = simulate(ctx, v, list, dayStartMin, 'W');
     return { rows: sim.rows, end: sim.end, kmLeft: sim.km, kmAll: all.km, late: sim.late, startT: st.t, est: sim.est };
   }
-  g.RC = { VEH, MODE, W, markBack, tmin, fmtT, hav, autoAssign, insertUrgent, planOf, simulate, optimizeVehicle, fixedOf, startState };
+  g.RC = { VEH, AUTO, MODE, W, markBack, tmin, fmtT, hav, autoAssign, insertUrgent, planOf, simulate, optimizeVehicle, fixedOf, startState };
 })(typeof window !== 'undefined' ? window : globalThis);

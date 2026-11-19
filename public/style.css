@@ -3,7 +3,7 @@
   --accent:#1D4450; --accent-ink:#FFFFFF; --accent-soft:#DCE8EA;
   --urgent:#C8440C; --urgent-bg:#FCE6DA; --ok:#27804A; --ok-bg:#DFF1E4; --fail:#B42318; --fail-bg:#FBE3E0;
   --warn:#A36A00; --warn-bg:#FCF0D2; --pick:#6B4FA0; --pick-bg:#ECE6F6;
-  --car:#2B5A8C; --m1:#1C8468; --m2:#B25E17;
+  --car:#2B5A8C; --m1:#1C8468; --m2:#B25E17; --m3:#7A4FA8; --lala:#D9822B;
   --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
@@ -13,7 +13,7 @@
   --accent:#5FB0B9; --accent-ink:#0A1312; --accent-soft:#1F3538;
   --urgent:#FF8B55; --urgent-bg:#3B2318; --ok:#5CC27C; --ok-bg:#15301F; --fail:#F2786D; --fail-bg:#3B1C19;
   --warn:#F2BE4A; --warn-bg:#352A12; --pick:#B9A0EA; --pick-bg:#2A2238;
-  --car:#72A5DE; --m1:#4CC4A0; --m2:#E3964F;
+  --car:#72A5DE; --m1:#4CC4A0; --m2:#E3964F; --m3:#B38BDB; --lala:#F0A75C;
 }}
 *{box-sizing:border-box}
 html,body{margin:0}
