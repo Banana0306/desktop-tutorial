@@ -108,7 +108,7 @@
     document.querySelectorAll('main').forEach(m => m.hidden = true);
     $('#view-' + S.view).hidden = false;
     document.querySelectorAll('#tabs [data-view]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === S.view));
-    if (S.view === 'dispatch') { renderBanner(); renderUnassigned(); renderBoard(); renderSupSelect(); if (document.activeElement !== $('#s-start')) $('#s-start').value = S.fleet.start || '09:30'; $('#r-radius').textContent = S.fleet.motoRadiusKm || 10; }
+    if (S.view === 'dispatch') { renderBanner(); renderUnassigned(); renderBoard(); renderSupSelect(); if (document.activeElement !== $('#p-veh')) renderModeVeh(); if (document.activeElement !== $('#s-start')) $('#s-start').value = S.fleet.start || '09:30'; $('#r-radius').textContent = S.fleet.motoRadiusKm || 10; }
     else if (S.view === 'driver') renderDriver();
     else if (S.view === 'track') renderTrack();
     else if (S.view === 'history') { if (S.renderedView !== 'history') initHistory(); }
@@ -143,7 +143,7 @@
     if (s.status === 'pending' && row) {
       p += `<span class="pill eta">${s.eta ? esc(s.eta) : '約 ' + fmtT(row.eta)}</span>`;
       if (row.late > 0) p += `<span class="pill fail">晚到 ${Math.round(row.late)} 分・已打烊</span>`;
-      else if (row.wait >= 10) p += `<span class="pill warn">等開門 ${fmtDur(row.wait)}</span>`;
+      else if (row.wait > 0) p += `<span class="pill warn">到時還沒開門・${esc(normT(s.open) || '')} 開，等 ${fmtDur(row.wait)}</span>`;
     }
     if (s.status === 'done') p += `<span class="pill ok">${s.kind === 'pickup' ? '已取貨' : '已送達'} ${esc(hhmm(s.done_at))}</span>`;
     if (s.status === 'fail') p += `<span class="pill fail">未完成・${esc(s.note || '')} ${esc(hhmm(s.done_at))}</span>`;
@@ -359,6 +359,8 @@
       if (!mtx) parts.push('沒有 Google 金鑰，用估算排的');
       if (noGeo.length) parts.push(`${noGeo.length} 站地址轉不出座標`);
       if (late) parts.push(`${late} 站可能趕不上打烊`);
+      const early = Object.entries(PLANS[v].rows).filter(([, r]) => r.wait > 0).map(([id]) => byId(+id) || byId(id)).filter(Boolean);
+      if (early.length) parts.push(`${early.map(s => s.shop).join('、')} 到的時候還沒開門，會等開門再送`);
       flash(msgSel, `${vName(v)} 的路線排好了（${order.length} 站，預計 ${fmtT(PLANS[v].end)} 回倉）` + (parts.length ? '，但：' + parts.join('；') : '。接著按「複製路線傳 LINE」。'), parts.length > 0);
     } catch (e) { flash(msgSel, '排路線失敗：' + e.message, true); }
   }
@@ -385,6 +387,8 @@
       if (skip.size) parts.push(`${skip.size} 站今天公休，留在未分配`);
       if (un - skip.size > 0) parts.push(`${un - skip.size} 站沒有車可送`);
       if (late) parts.push(`${late} 站可能趕不上打烊`);
+      const early = VEH.flatMap(v => Object.entries(PLANS[v].rows).filter(([, r]) => r.wait > 0).map(([id]) => byId(+id) || byId(id)).filter(Boolean));
+      if (early.length) parts.push(`${early.map(s => s.shop).join('、')} 到的時候還沒開門，會等開門再送`);
       flash('#a-msg', parts.length ? '排好了，但：' + parts.join('；') : '路線排好了，汽車與機車各用自己的 Google 車程。', parts.length > 0);
     } catch (e) { flash('#a-msg', '排車失敗：' + e.message, true); }
     finally { btn.disabled = false; }
@@ -472,6 +476,16 @@
     $('#p-label').textContent = S.photo.files.length ? `已選 ${S.photo.files.length} 張，點這裡重選` : '點這裡拍照或選照片';
     $('#p-go').disabled = !S.photo.files.length || S.photo.busy;
   }
+  function renderModeVeh() {
+    const sel = $('#p-veh'); if (!sel) return;
+    sel.innerHTML = VEH.filter(v => S.fleet.active[v] !== false).map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('');
+    const m = document.querySelector('[name=p-mode]:checked').value;
+    sel.hidden = m !== 'veh';
+    if (m === 'veh' && !S.photo.veh) S.photo.veh = sel.value;
+    if (m === 'veh') sel.value = S.photo.veh; else S.photo.veh = '';
+  }
+  document.querySelectorAll('[name=p-mode]').forEach(r => r.addEventListener('change', () => { S.photo.veh = ''; renderModeVeh(); renderReview(); }));
+  $('#p-veh').addEventListener('change', e => { S.photo.veh = e.target.value; renderReview(); });
   $('#p-files').addEventListener('change', e => { S.photo.files = Array.from(e.target.files || []).slice(0, 8); S.photo.review = null; renderReview(); showThumbs(); });
   $('#p-go').addEventListener('click', async () => {
     if (!S.me.ocr) { flash('#p-msg', '還沒設定 ANTHROPIC_API_KEY。可以把照片傳給 Claude 對話，再用「貼上 JSON」匯入。', true); return; }
@@ -487,14 +501,26 @@
     } catch (e) { flash('#p-msg', e.message, true); }
     finally { S.photo.busy = false; $('#p-go').disabled = !S.photo.files.length; }
   });
+  // 營業時間檢查：今天公休／還沒開門／已打烊
+  function hourWarn(x) {
+    if (x.closed_days && String(x.closed_days).split(',').map(d => d.trim()).includes(String(weekday(S.date)))) return { k: 'fail', t: '今天公休' };
+    const o = tmin(x.open), c = tmin(x.close);
+    const ref = S.date === today() ? Math.max(nowMin() || 0, dayStart()) : dayStart();
+    if (c != null && ref > c) return { k: 'fail', t: `已打烊（${fmtT(c)} 關）` };
+    if (o != null && ref < o) return { k: 'warn', t: `還沒開門（${fmtT(o)} 才開）` };
+    if (o == null && c == null) return { k: 'warn', t: '沒有營業時間' };
+    return null;
+  }
   function renderReview() {
     const r = S.photo.review, box = $('#p-review');
     if (!r || !r.length) { box.innerHTML = ''; return; }
+    const ws = r.filter(x => x.on).map(x => [x, hourWarn(x)]).filter(a => a[1]);
+    const warnBox = ws.length ? `<div class="banner warn" style="margin-bottom:8px"><span><b>③ 營業時間提醒：</b>${ws.map(([x, w]) => `${esc(x.shop || x.code)}・${esc(w.t)}`).join('；')}。還沒開門的會排在開門後才到，公休的不排。</span></div>` : '';
     const inp = (i, k, ph, sub) => `<input data-rv="${i}" data-k="${k}"${sub ? ' data-sub="1"' : ''} value="${esc(sub ? (r[i].pickup || {})[k] : r[i][k])}" placeholder="${ph}" aria-label="${ph}">`;
-    box.innerHTML = `<div class="review">${r.map((x, i) => `<div class="rv">
+    box.innerHTML = warnBox + `<div class="review">${r.map((x, i) => `<div class="rv">
       <input type="checkbox" data-rvon="${i}" ${x.on ? 'checked' : ''} aria-label="加入這筆">
       <div><div class="shop">${esc(x.shop || '（沒有店名）')}</div>
-        <div class="pills">${x.code ? `<span class="pill">${esc(x.code)}</span>` : ''}${x.urgent ? '<span class="pill urg">急件</span>' : ''}${x.bulky ? '<span class="pill">大件</span>' : ''}${x.pickup ? '<span class="pill pick">要先取貨</span>' : ''}${x.back ? '<span class="pill pick">回程取貨・帶回倉庫</span>' : ''}${x.closed_days && String(x.closed_days).split(',').includes(String(weekday(S.date))) ? '<span class="pill fail">今天公休</span>' : ''}</div>
+        <div class="pills">${x.code ? `<span class="pill">${esc(x.code)}</span>` : ''}${x.urgent ? '<span class="pill urg">急件</span>' : ''}${x.bulky ? '<span class="pill">大件</span>' : ''}${x.pickup ? '<span class="pill pick">要先取貨</span>' : ''}${x.back ? '<span class="pill pick">回程取貨・帶回倉庫</span>' : ''}${(w => w ? `<span class="pill ${w.k}">${esc(w.t)}</span>` : '')(hourWarn(x))}</div>
         ${x.back ? (x.matched ? `<div class="matched">✓ ${esc(x.matched)}</div>` : `<div class="unsure">⚠ 供應商清單沒有這家，請選下面的供應商或補地址</div>`) : x.matched ? `<div class="matched">✓ 客戶檔：${esc(x.matched)}</div>` : (x.code ? `<div class="unsure">⚠ 客戶檔沒有 ${esc(x.code)}</div>` : '')}
         ${x.unsure ? `<div class="unsure">⚠ ${esc(x.unsure)}</div>` : ''}
         <div class="rv-edit">${inp(i, 'shop', '店名')}${inp(i, 'addr', '地址')}
@@ -504,8 +530,8 @@
           ${x.back ? `<select data-rvbsup="${i}"><option value="">（選供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>` : ''}
           ${x.pickup && !x.back ? `<div class="lbl">先取貨</div><select data-rvsup="${i}"><option value="">（自填供應商）</option>${S.suppliers.map(s => `<option value="${s.id}"${x.pickup.supplier_id == s.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</select>${inp(i, 'name', '供應商', 1)}${inp(i, 'addr', '供應商地址', 1)}${inp(i, 'items', '要取的貨', 1)}${!x.pickup.addr ? '<div class="unsure">⚠ 供應商地址空白，請補上或選上面的供應商</div>' : ''}` : ''}
         </div></div></div>`).join('')}</div>
-      <label class="field" style="margin-top:8px"><span class="lbl">交給哪位司機</span><select id="rv-veh"><option value="">自動分配（之後按「用 Google 排車」）</option>${VEH.map(v => `<option value="${v}"${S.photo.veh === v ? ' selected' : ''}>${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('')}</select></label>
-      <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">${S.photo.veh ? `加入 ${r.filter(x => x.on).length} 筆，請 Google 排 ${esc(vName(S.photo.veh))} 的路線` : `加入勾選的 ${r.filter(x => x.on).length} 筆`}</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
+      <label class="field" style="margin-top:8px"><span class="lbl">交給哪位司機</span><select id="rv-veh"><option value="">全部由系統分配</option>${VEH.map(v => `<option value="${v}"${S.photo.veh === v ? ' selected' : ''}>${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('')}</select></label>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="rv-add">${S.photo.veh ? `加入 ${r.filter(x => x.on).length} 筆，請 Google 排 ${esc(vName(S.photo.veh))} 的路線` : `加入 ${r.filter(x => x.on).length} 筆，由系統分配並排路線`}</button><button class="btn sm" id="rv-cancel">取消</button></div>`;
   }
   $('#p-review').addEventListener('input', e => {
     const el = e.target, r = S.photo.review; if (!r) return;
@@ -513,7 +539,7 @@
   });
   $('#p-review').addEventListener('change', e => {
     const el = e.target, r = S.photo.review; if (!r) return;
-    if (el.id === 'rv-veh') { S.photo.veh = el.value; renderReview(); return; }
+    if (el.id === 'rv-veh') { S.photo.veh = el.value; document.querySelector(`[name=p-mode][value=${el.value ? 'veh' : 'auto'}]`).checked = true; renderModeVeh(); renderReview(); return; }
     if (el.dataset.rvon != null) { r[+el.dataset.rvon].on = el.checked; renderReview(); }
     if (el.dataset.rvb != null) r[+el.dataset.rvb].bulky = el.checked;
     if (el.dataset.rvu != null) r[+el.dataset.rvu].urgent = el.checked;
@@ -530,10 +556,10 @@
     try {
       const veh = S.photo.veh || '';
       for (const x of items) { const r = await addOrder(Object.assign({}, x, { veh, pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
-      S.photo.review = null; S.photo.files = []; S.photo.veh = ''; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
+      S.photo.review = null; S.photo.files = []; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
       await refresh();
       if (veh) { flash('#p-msg', `已加入 ${n} 筆給 ${vName(veh)}，Google 排路線中…`); await orderVeh(veh, '#p-msg'); }
-      else flash('#p-msg', `已加入 ${n} 筆${urg.length ? '，急件已插進 ' + urg.join('、') : ''}。接著按「用 Google 排車」。`);
+      else { flash('#p-msg', `已加入 ${n} 筆${urg.length ? '，急件已插進 ' + urg.join('、') : ''}，系統分配並排路線中…`); await runAuto($('#auto')); flash('#p-msg', $('#a-msg').textContent, $('#a-msg').classList.contains('err')); }
     } catch (err) { flash('#p-msg', err.message, true); e.target.disabled = false; }
   });
 

@@ -13,6 +13,7 @@
     balance: 30,     // 每台車工時（小時）平方 × 30 → 工作量盡量平均分給有出車的司機
     motoFar: 2.5,    // 機車跑超過設定距離，每公里罰 2.5 分（軟限制，不是硬規則）
     carry: 5,        // 回程取貨（拿回倉庫的貨）之後每多送一站罰 5 分 → 盡量排在送完貨、回倉的路上
+    near: 0.3,       // 每家客戶「從出發到送達」每分鐘計 0.3 → 從公司由近到遠送，近的客戶先拿到貨
   };
 
   const tmin = h => { if (!h) return null; const m = /^(\d{1,2})[:：]?(\d{2})$/.exec(String(h).trim()); return m ? (+m[1]) * 60 + (+m[2]) : null; };
@@ -78,6 +79,7 @@
     if (!precedenceOk(route, st.doneIds)) return { cost: Infinity, dur: Infinity };
     const sim = simulate(ctx, v, route, st.t, st.pt);
     let cost = (sim.end - st.t) + sim.late * W.late + sim.urg * W.urgent;
+    for (const s of route) if (!s._back && s.kind !== 'pickup') cost += (sim.rows[s.id].eta - st.t) * W.near;
     let ob = 0; for (const s of route) { if (s._back) ob++; else if (s.kind !== 'pickup') cost += ob * W.carry; }
     if (MODE[v] === 'moto') {
       const R = ctx.motoRadiusKm || 10;
@@ -108,7 +110,7 @@
         const l = travel(v, p, s); let at = t + l.min;
         const [o, cl] = win(s); let w = 0; if (at < o) { w = o - at; at = o; }
         const lt = at > cl ? at - cl : 0;
-        const add = l.min + w + per + lt * W.late + (s.urgent ? (at - st.t) * W.urgent : 0) + (!s._back && s.kind !== 'pickup' ? ob * W.carry : 0);
+        const add = l.min + w + per + lt * W.late + (s.urgent ? (at - st.t) * W.urgent : 0) + (!s._back && s.kind !== 'pickup' ? ob * W.carry + (at - st.t) * W.near : 0);
         used[i] = true; seq.push(s); seen.add(s.id);
         dfs(s, at + per, acc + add, ob + (s._back ? 1 : 0));
         used[i] = false; seq.pop(); seen.delete(s.id);

@@ -197,3 +197,6 @@ table.data .dirty{border-color:var(--warn)}
 .trk.ok .trk-s{color:var(--ok)}
 .trk.fail .trk-s{color:#B3261E}
 .trk.wait .trk-s{color:var(--muted)}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px 16px;margin:4px 0 6px}
+#p-veh{margin-bottom:6px}
