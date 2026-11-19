@@ -478,7 +478,7 @@
   }
   function renderModeVeh() {
     const sel = $('#p-veh'); if (!sel) return;
-    sel.innerHTML = VEH.filter(v => S.fleet.active[v] !== false).map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）</option>`).join('');
+    sel.innerHTML = VEH.map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）${S.fleet.active[v] === false ? '・目前設不出車，選了會改成出車' : ''}</option>`).join('');
     const m = document.querySelector('[name=p-mode]:checked').value;
     sel.hidden = m !== 'veh';
     if (m === 'veh' && !S.photo.veh) S.photo.veh = sel.value;
@@ -555,6 +555,7 @@
     e.target.disabled = true; let n = 0; const urg = [];
     try {
       const veh = S.photo.veh || '';
+      if (veh && S.fleet.active[veh] === false) { S.fleet.active[veh] = true; await api('/settings/fleet', { method: 'PUT', body: S.fleet }); }
       for (const x of items) { const r = await addOrder(Object.assign({}, x, { veh, pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
       S.photo.review = null; S.photo.files = []; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
       await refresh();
