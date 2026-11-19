@@ -256,9 +256,9 @@ async function api(req, env, url) {
     return json({ ok: true });
   }
 
-  // ----- 送貨紀錄與 KPI（老闆／排車員） -----
+  // ----- 送貨紀錄（老闆／排車員／業務）與 KPI（老闆／排車員） -----
   if (path === '/history' && method === 'GET') {
-    needDispatch();
+    if (!isDispatch && s.role !== 'sales') throw new HttpError(403, '只有老闆、排車員或業務可以看送貨紀錄');
     const from = url.searchParams.get('from') || today(), to = url.searchParams.get('to') || from;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) bad('日期格式不對');
     const r = await db.prepare(`SELECT date, veh, driver, kind, customer_code, shop, addr, items, status, note, done_at, source FROM stops

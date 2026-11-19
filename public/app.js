@@ -50,7 +50,7 @@
     $('#view-login').hidden = true; $('#top').hidden = false;
     $('#who').textContent = (me.name ? me.name + '・' : '') + (me.roleName || '');
     const tabs = me.canDispatch ? [['dispatch', '排車'], ['track', '查詢配送'], ['history', '送貨紀錄'], ['driver', '司機畫面'], ['customers', '客戶'], ['suppliers', '供應商'], ['settings', '設定']].concat(me.isOwner ? [['users', '使用者']] : [])
-      : me.role === 'sales' ? [['track', '查詢配送'], ['settings', '設定']] : [['driver', '我的路線'], ['settings', '設定']];
+      : me.role === 'sales' ? [['track', '查詢配送'], ['history', '送貨紀錄'], ['settings', '設定']] : [['driver', '我的路線'], ['settings', '設定']];
     S.view = me.canDispatch ? 'dispatch' : me.role === 'sales' ? 'track' : 'driver';
     if (me.veh && VEH.includes(me.veh)) S.drv = me.veh;
     $('#tabs').innerHTML = tabs.map(([v, n]) => `<button role="tab" data-view="${v}" aria-selected="${v === S.view}">${n}</button>`).join('');
@@ -1006,7 +1006,9 @@
     S.renderedView = 'history';
     if (!$('#k-month').value) $('#k-month').value = today().slice(0, 7);
     if (!$('#h-from').value) { $('#h-from').value = today(); $('#h-to').value = today(); }
-    loadKpi(); loadHistory();
+    $('#kpi-panel').hidden = !S.me.canDispatch;
+    if (S.me.canDispatch) loadKpi();
+    loadHistory();
   }
   async function loadKpi() {
     busy('#k-msg', '計算中…');
