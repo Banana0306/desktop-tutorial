@@ -87,6 +87,18 @@
   const byId = id => S.stops.find(x => x.id === id);
   const partnerOf = s => s.needs ? byId(s.needs) : S.stops.find(x => x.needs === s.id);
   const dayStart = () => tmin(S.fleet && S.fleet.start) ?? 570;
+  // 「今日休」只對那一天有效：存在 fleet.off[日期] 裡，隔天自動恢復出車
+  const offList = () => ((S.fleet.off || {})[S.date] || []);
+  const isOn = v => !offList().includes(v);
+  const activeToday = () => Object.fromEntries(VEH.map(v => [v, isOn(v)]));
+  async function setOn(v, on) {
+    const off = Object.assign({}, S.fleet.off || {}), lim = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
+    Object.keys(off).forEach(d => { if (d < lim) delete off[d]; });
+    const cur = new Set(off[S.date] || []); on ? cur.delete(v) : cur.add(v);
+    if (cur.size) off[S.date] = [...cur]; else delete off[S.date];
+    S.fleet.off = off; S.fleet.active = { car: true, m1: true, m2: true };
+    await api('/settings/fleet', { method: 'PUT', body: S.fleet });
+  }
   const nowMin = () => { if (S.date !== today()) return null; const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
   const hoursTxt = s => (s.open || s.close) ? `${s.open || '?'}–${s.close || '?'}` : '';
   const isClosedToday = s => String(s.closed_days || '').split(',').map(x => x.trim()).includes(String(weekday(S.date)));
@@ -191,7 +203,7 @@
   function renderBoard() {
     const cards = VEH.map(v => {
       const list = vStops(v), pend = list.filter(s => s.status === 'pending'), pl = PLANS[v];
-      const done = list.length - pend.length, on = S.fleet.active[v] !== false, ld = lastDone(v);
+      const done = list.length - pend.length, on = isOn(v), ld = lastDone(v);
       const lastTxt = ld ? `最後回報 <span class="num">${esc(hhmm(ld.done_at))}</span>・${esc(ld.shop)}${ld.status === 'fail' ? '（未完成）' : ''}` : (list.length ? '尚未回報' : '');
       const R = S.routes[v];
       const kmTxt = R ? R.totalKm.toFixed(1) : pl.kmAll.toFixed(1);
@@ -372,7 +384,7 @@
       const mtx = await safeMatrix('#a-msg');
       busy('#a-msg', '計算分車與順序…');
       await new Promise(r => setTimeout(r, 30));
-      const a = RC.autoAssign(Object.assign(ctx(), { matrix: mtx }), S.stops, S.fleet.active, dayStart(), nowMin(), skip);
+      const a = RC.autoAssign(Object.assign(ctx(), { matrix: mtx }), S.stops, activeToday(), dayStart(), nowMin(), skip);
       const list = [];
       S.stops.forEach(x => { const t = a[x.id]; if (t && (t.veh !== x.veh || t.seq !== x.seq)) { list.push({ id: x.id, veh: t.veh, seq: t.seq, eta: '' }); x.veh = t.veh; x.seq = t.seq; x.eta = ''; } });
       skip.forEach(id => { const x = byId(id); if (x && x.veh) { list.push({ id, veh: '', seq: 0 }); x.veh = ''; x.seq = 0; } });
@@ -423,7 +435,7 @@
       return 'added';
     }
     if (o.urgent && S.stops.some(s => s.veh)) {
-      const r = RC.insertUrgent(ctx(), list, S.stops, S.fleet.active, dayStart(), nowMin());
+      const r = RC.insertUrgent(ctx(), list, S.stops, activeToday(), dayStart(), nowMin());
       if (r.veh) {
         list.forEach(x => { x.veh = r.veh; x.seq = r.seqs[x.id] || 0; }); placed = r.veh;
         const others = S.stops.filter(s => s.veh === r.veh && r.seqs[s.id] && r.seqs[s.id] !== s.seq).map(s => ({ id: s.id, seq: r.seqs[s.id] }));
@@ -478,7 +490,7 @@
   }
   function renderModeVeh() {
     const sel = $('#p-veh'); if (!sel) return;
-    sel.innerHTML = VEH.map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）${S.fleet.active[v] === false ? '・目前設不出車，選了會改成出車' : ''}</option>`).join('');
+    sel.innerHTML = VEH.map(v => `<option value="${v}">${esc(vName(v))}（${({ car: '汽車', m1: '機車 A', m2: '機車 B' })[v]}）${isOn(v) ? '' : '・今天設成休，選了會改成出車'}</option>`).join('');
     const m = document.querySelector('[name=p-mode]:checked').value;
     sel.hidden = m !== 'veh';
     if (m === 'veh' && !S.photo.veh) S.photo.veh = sel.value;
@@ -555,7 +567,7 @@
     e.target.disabled = true; let n = 0; const urg = [];
     try {
       const veh = S.photo.veh || '';
-      if (veh && S.fleet.active[veh] === false) { S.fleet.active[veh] = true; await api('/settings/fleet', { method: 'PUT', body: S.fleet }); }
+      if (veh && !isOn(veh)) await setOn(veh, true);
       for (const x of items) { const r = await addOrder(Object.assign({}, x, { veh, pickup: !x.back && x.pickup && x.pickup.addr ? x.pickup : null })); n++; if (r !== 'added') urg.push(vName(r)); }
       S.photo.review = null; S.photo.files = []; $('#p-files').value = ''; $('#p-note').value = ''; showThumbs(); renderReview();
       await refresh();
@@ -646,7 +658,7 @@
         S.confirmDel = null; const pr = partnerOf(s);
         await api('/stops', { method: 'DELETE', body: { ids: pr && pr.status === 'pending' ? [id, pr.id] : [id] } }); await refresh();
       } else if (act === 'active') {
-        const v = b.dataset.v; S.fleet.active[v] = S.fleet.active[v] === false; await api('/settings/fleet', { method: 'PUT', body: S.fleet }); render();
+        const v = b.dataset.v; await setOn(v, !isOn(v)); render();
       } else if (act === 'dmove') {
         await driverMove(id, b.dataset.dir);
       } else if (act === 'daddtoggle') {
